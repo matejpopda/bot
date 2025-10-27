@@ -6,8 +6,12 @@ import src.Cogs.debug as debug
 import src.Cogs.ttrpgtools as ttrpgtools
  
 
+default_command_integration_types=set([discord.IntegrationType.guild_install, 
+                                       discord.IntegrationType.user_install])
+
 if __name__ == "__main__":
-    bot = discord.Bot()
+
+    bot = discord.Bot(default_command_integration_types=default_command_integration_types)
     config = dotenv.dotenv_values()
     
 

@@ -38,10 +38,10 @@ class TttrpgTools(commands.Cog):
         await ctx.respond(response)
 
 
-
-    @ttrpg.command(description="Simulate rolling and output a histogram") 
+    @ttrpg.command(description="Simulate rolling and output a probability distribution function") 
     @discord.option("dice_notation", type=str, description="Input dice notation")
-    async def simulate_roll(self, ctx:discord.ApplicationContext, dice_notation:str):
+    @discord.option("cumulative_plot", type=bool, default=False, description="Return the cumulative distribution function as result")
+    async def simulate_roll(self, ctx:discord.ApplicationContext, dice_notation:str, cumulative_plot:bool=False ):
         rolls = 10000
 
         results = np.array([d20.roll(dice_notation).total for _ in range(rolls)])
@@ -49,31 +49,40 @@ class TttrpgTools(commands.Cog):
 
         totals = np.arange(results.min(), results.max() + 1)
         counts = np.array([np.sum(results == t) for t in totals])
-        probs = counts / counts.sum()
+        pdf = counts / counts.sum()
 
         avg = np.mean(results)
+        mode = np.median(results)
+        variance = np.var(results)
 
         sns.set_theme(style="darkgrid")
         plt.figure(figsize=(6, 4))
-        plt.bar(totals, probs)
 
-        plt.axvline(avg, color="red", linestyle="--", label=f"Mean = {avg:.2f}")
-        plt.legend()
+        if cumulative_plot == True:
+            cdf = np.cumsum(pdf)
+            plt.bar(totals, cdf)
+        else: 
+            plt.bar(totals, pdf)
+
+        # Use the plt.legend in order to write out avg, mode and mean
+        plt.axvline(avg, color=(0,0,0,0), linestyle="--", label=f"Mean = {avg:.2f}")
+        plt.axvline(mode, color=(0,0,0,0), linestyle="--", label=f"Mode = {mode:.2f}")
+        plt.axvline(variance, color=(0,0,0,0), linestyle="--", label=f"Variance = {variance:.2f}")
+        plt.legend(markerfirst=False, markerscale=0, handlelength=0)
+
+
         plt.title(f"{dice_notation} — {rolls:,} rolls")
-        plt.xlabel("Total Roll")
-        plt.ylabel("Frequency")
-
-
-        # Save to memory
-        buf = io.BytesIO()
+        plt.xlabel("Roll Result")
+        plt.ylabel("Probability")
         plt.tight_layout()
+
+        buf = io.BytesIO()
         plt.savefig(buf, format="png", dpi=200)
         buf.seek(0)
         plt.close()
 
-        # Send as image
         file = discord.File(buf, filename="histogram.png")
-        await ctx.respond(file=file)
+        await ctx.respond(f"Simulated the following dice roll: `{dice_notation}`", file=file)
 
 
 
@@ -81,17 +90,15 @@ class TttrpgTools(commands.Cog):
         interaction_response = ctx.response
 
         if isinstance(error.original, d20.RollSyntaxError):
-            error=error.original
             dice_notation = parse_ctx_to_get_dice_notation(ctx)
             content =  (f"""```There is an error with the roll syntax:\n"""
                         f"""{dice_notation}\n\n"""
-                        f"""Expected {error.expected} at the column {error.col}, but got "{error.got}" instead```""")
+                        f"""Expected {error.original.expected} at the column {error.original.col}, but got "{error.original.got}" instead```""")
             await interaction_response.send_message(content=content, ephemeral=True)
 
         elif isinstance(error.original, d20.RollError):
-            error=error.original
             dice_notation = parse_ctx_to_get_dice_notation(ctx)
-            content = f"Error in the dice notation {dice_notation}. \n {error}" 
+            content = f"Error in the dice notation {dice_notation}. \n {error.original}" 
             await interaction_response.send_message(content=content, ephemeral=True)
 
         else:
