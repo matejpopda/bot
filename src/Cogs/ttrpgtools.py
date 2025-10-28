@@ -37,6 +37,12 @@ class TttrpgTools(commands.Cog):
         response = roll_template.format(dice_notation=dice_notation, result=roll_result.total, dice = str(roll_result))
         await ctx.respond(response)
 
+    @ttrpg.command(description="Prints info about the ttrpg submodule") 
+    async def info(self, ctx:discord.ApplicationContext):
+        response = "`This module uses the following library on its backend:` <https://github.com/avrae/d20>`. Consult the website for more advanced syntax.`"
+        await ctx.respond(response, ephemeral=True)
+
+
 
     @ttrpg.command(description="Simulate rolling and output a probability distribution function") 
     @discord.option("dice_notation", type=str, description="Input dice notation")
