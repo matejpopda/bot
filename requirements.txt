@@ -1,7 +1,7 @@
 py-cord
 python-dotenv
 
-
+SQLAlchemy
 
 # Dice rolling library for TTRPG
 dyce
@@ -9,3 +9,8 @@ d20
 
 # Plotting library for statistics
 seaborn
+
+
+# Random online functionality
+requests
+
