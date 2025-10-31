@@ -18,8 +18,9 @@ def format_quote(quote:str):
 
 class Fun(commands.Cog):
     
-    def __init__(self, bot: discord.Bot): 
+    def __init__(self, bot: commands.Bot): 
         self.bot = bot
+
         
     fun = discord.SlashCommandGroup("fun", "Random collection of fun tools")
 

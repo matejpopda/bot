@@ -1,7 +1,9 @@
 py-cord
 python-dotenv
 
+# Database 
 SQLAlchemy
+aiosqlite
 
 # Dice rolling library for TTRPG
 dyce
@@ -14,3 +16,6 @@ seaborn
 # Random online functionality
 requests
 
+
+# this library is needed when running python 3.13 or above
+audioop-lts 

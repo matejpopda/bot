@@ -1,19 +1,18 @@
-Priority 1 
+Priority 1 (Active)
 Game statistics
 Figure out how to occasionaly post a game link
 
-
-Priority 2
+Priority 2 (Concrete ideas)
+Catch errors that can be emitted by the external APIs 
 Implement a command to use https://soruly.github.io/trace.moe-api/#/
 Either include memepy or write my own thing
 Photo filters
 Mood tracker
 
-
-
-Priority 3
+Priority 3 (Vague ideas)
 Economy
 Message count stats
 
-Priority whene I feel like it
-Catch errors that can be emitted by the external APIs 
+
+Priority 4 (Polish)
+Add an on edit hook for ingesting game scores, using on_raw_message_edit

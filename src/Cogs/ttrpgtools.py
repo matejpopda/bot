@@ -24,8 +24,9 @@ def parse_ctx_to_get_dice_notation(ctx: discord.ApplicationContext):
 
 class TttrpgTools(commands.Cog):
     
-    def __init__(self, bot: discord.Bot): 
+    def __init__(self, bot: commands.Bot): 
         self.bot = bot
+
         
     ttrpg = discord.SlashCommandGroup("ttrpg", "ttrpg tools")
     advanced_ttrpg = ttrpg.create_subgroup("advanced", "Tools for modelling probability outcomes")
