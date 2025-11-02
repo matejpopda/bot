@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from ..modules import gamestatistics
 import io 
+import asyncio
 
 class GameStatistics(commands.Cog):
     
@@ -33,18 +34,19 @@ class GameStatistics(commands.Cog):
         output = io.StringIO()
         scores = await gamestatistics.raw_game_data(game, ctx.user.id)
         for score in scores:
-            output.write(f"{score["date"].isoformat()} — Streak {score["score"]}\n")
+            output.write(f"{score["date"].isoformat()} - Game {score["gamenumber"]} - Score {score["score"]}\n")
 
         output.seek(0)
-        file = discord.File(fp=output, filename="coindle_results.txt")
+        file = discord.File(fp=output, filename="results.txt")
         
         await ctx.response.send_message(content=f"Here are your scores for {game}", ephemeral=True, file=file)
 
 
     @command_group.command(description="Goes through all the messages in the channel and saves them") 
     async def ingest_channel_history(self, ctx:discord.ApplicationContext):
+        await ctx.defer(ephemeral=True)
         await gamestatistics.ingest_games_in_channel(ctx)
-        await ctx.response.send_message(content="Ingested", ephemeral=True)
+        await ctx.followup.send(content="Ingested", ephemeral=True)
 
 
     @command_group.command(description="Registers channel, so it automatically saves the scores") 
@@ -61,13 +63,16 @@ class GameStatistics(commands.Cog):
         await ctx.response.send_message(content="Succesfully unregistered", ephemeral=True)
 
     @commands.Cog.listener()
-    async def on_message_sent(self, message: discord.Message):
+    async def on_message(self, message: discord.Message):
 
         if message.author == self.bot.user:
             return
         
-        if not gamestatistics.in_registered_channel(message):
+
+        if not  await gamestatistics.in_registered_channel(message):
             return
+        
+
         
         await gamestatistics.ingest_message(message)
 

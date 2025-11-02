@@ -16,3 +16,5 @@ Message count stats
 
 Priority 4 (Polish)
 Add an on edit hook for ingesting game scores, using on_raw_message_edit
+
+In gamestatistics.py, when registering the parser its not possible to have 2 games share the same regex because of dictionary. Should be fixed by swapping the datastructure. (Currently just avoiding the collisions by slightly modifying the regex) 
