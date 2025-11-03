@@ -12,6 +12,7 @@ import src.Cogs.fun as fun
 from io import BytesIO
 
 from src.modules.database import engine, Base
+from src.modules import formatting
 
 import src.modules.gamestatistics
 

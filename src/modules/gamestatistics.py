@@ -15,6 +15,15 @@ import sqlalchemy
 from ..modules import database
 from collections.abc import Callable
 
+
+import numpy as np
+import d20
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import io
+import discord
+
 import re
 
 
@@ -30,12 +39,12 @@ WIKI_GAME_DAILY_ORIGIN_DATE = datetime.date(day=17, month=7, year=2024) # Based 
 REVEALED_ORIGIN_DATE = datetime.date(day=6, month=10, year=2025)
 WORDLE_ORIGIN_DATE = datetime.date(day=19, month=6, year=2021)
 COSTCODLE_ORIGIN_DATE = datetime.date(day=19, month=9, year=2023)
-ANGLE_ORIGIN_DATE = datetime.date(day=20, month=6, year=2022 )
-PIPS_ORIGIN_DATE = datetime.date(day=28, month=7, year=2025 )
+ANGLE_ORIGIN_DATE = datetime.date(day=21, month=6, year=2022 )
+PIPS_ORIGIN_DATE = datetime.date(day=18, month=8, year=2025 )
 KINDA_HARD_GOLF_ORIGIN_DATE = datetime.date(day=1, month=3, year=2025 )
-CONNECTIONS_ORIGIN_DATE = datetime.date(day=10, month=6, year=2023 )
+CONNECTIONS_ORIGIN_DATE = datetime.date(day=11, month=6, year=2023 )
 BANDLE_ORIGIN_DATE = datetime.date(day=17, month=8, year=2022 )
-FIGURE_ORIGIN_DATE = datetime.date(day= 25, month=6, year=2022)
+FIGURE_ORIGIN_DATE = datetime.date(day= 26, month=6, year=2022)
 VIDEOPUZZLE_ORIGIN_DATE = datetime.date(day= 8, month=11, year=2024)
 FLAGLE_ORIGIN_DATE = datetime.date(day= 14, month=3, year=2022)
 FERMI_ESTIMATE_ORIGIN_DATE = datetime.date(day= 23, month=7, year=2025)
@@ -71,6 +80,23 @@ async def ingest_games_in_channel(ctx:discord.ApplicationContext):
             continue
         await ingest_message(msg)
 
+async def reingest_games_in_channel(ctx:discord.ApplicationContext):
+    async with database.AsyncSessionLocal.begin() as session:
+        channel:discord.interactions.InteractionChannel = ctx.channel 
+        await session.execute(sqlalchemy.delete(Scores).where(Scores.channel_id == channel.id))
+    await ingest_games_in_channel(ctx)
+
+
+async def register_channel(ctx:discord.ApplicationContext):
+    #sqlalchemy.exc.IntegrityError    
+    async with database.AsyncSessionLocal.begin() as session:
+        channel = RegisteredChannels()
+        channel.channel_id = ctx.channel_id
+        channel.timestamp_of_registration = discord.utils.utcnow()
+        channel.who_registered_user_id = ctx.author.id
+
+        session.add(channel)
+    return
 
 async def register_channel(ctx:discord.ApplicationContext):
     #sqlalchemy.exc.IntegrityError    
@@ -103,10 +129,9 @@ async def raw_game_data(game:str, user_id):
 
         result = []
 
-        query = await session.execute(sqlalchemy.select(Scores).where(Scores.user_id == user_id).where(Scores.game == game))
+        query = await session.execute(sqlalchemy.select(Scores).where(Scores.user_id == user_id).where(Scores.game == game).order_by(Scores.date_of_game.asc()))
         for score in query.scalars():
             result.append({"score":score.score, 
-                           "game":score.game, 
                            "date": score.date_of_game,
                            "gamenumber": score.game_number})
 
@@ -541,6 +566,13 @@ def pips_parser(message: discord.Message):
     game_number = int(result["number"])
 
     date = date_after_days_passed(PIPS_ORIGIN_DATE,game_number)
+
+    #edge case because some people have wrong numbering by 1 day
+
+    # if (date - message.created_at.date()).days == 1:
+    #     game_number -= 1
+    #     date = message.created_at.date()
+
     return float(score), date, int(game_number)
 
 
@@ -706,15 +738,14 @@ def gisnep_parser(message: discord.Message):
 
 
 
-@register_parser("VideoPuzzle", r"#VideoPuzzle #VideoPuzzle")
+@register_parser("VideoPuzzle", r"VideoPuzzle.org")
 def videopuzzle_parser(message: discord.Message):
 
     text = message.content
     pattern = re.compile(
-        r'VideoPuzzle\.org\s+(?P<number>\d+).*?\n'  # game number
-        r'(?:.*\n)*?'                               # skip board lines
-        r'Stars:\s*(?P<stars>⭐️+)\n'                # stars line
-        r'Moves:\s*(?P<moves>\d+)',                 # moves
+        r'VideoPuzzle\.org\s+(?P<game_number>\d+)\s+\(Daily\).*?\n'  # game number
+        r'(?:.*\n)*?'                                                 # skip any lines until Moves
+        r'Moves:\s*(?P<moves>\d+)',                                   # moves line
         re.DOTALL
     )
 
@@ -723,11 +754,11 @@ def videopuzzle_parser(message: discord.Message):
 
     if data is None: 
         return
+    
     result = data.groupdict()
 
-
     score = result["moves"]
-    game_number = int(result["number"].replace(',', ''))
+    game_number = int(result["game_number"].replace(',', ''))
 
     date = date_after_days_passed(VIDEOPUZZLE_ORIGIN_DATE ,game_number)
 
@@ -829,5 +860,37 @@ def foodguessr_parser(message: discord.Message):
 
 
 type User = discord.SlashCommandOptionType.user
-async def generate_graph(game: discord.OptionChoice, player_1: User, player_2: User|None, player_3: User|None, player_4: User|None):
-    return
+async def generate_graph(game: str, player_1: User, player_2: User|None, player_3: User|None, player_4: User|None, dates_instead_of_numbers:bool):
+
+    plt.figure(figsize=(6, 4))
+    plt.title(f"{game} scores")
+    plt.ylabel("Score")
+
+
+    for index, player in enumerate([player_1,player_2,player_3,player_4]):
+
+        if player is None:
+            continue
+
+        scores = await raw_game_data(game, player.id)
+
+        if dates_instead_of_numbers:
+            scores_x = [x["date"] for x in scores]
+            plt.xlabel("Date")
+
+        else:
+            scores_x = [x["gamenumber"] for x in scores]
+            plt.xlabel("Game number")
+
+        scores_y = [x["score"] for x in scores]
+
+        plt.plot(scores_x, scores_y, marker="o", label=f"{player.name}")
+
+    plt.legend()
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png", dpi=200)
+    buf.seek(0)
+    plt.close()
+    file = discord.File(buf, filename="score-history.png")
+    return file
