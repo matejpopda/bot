@@ -11,7 +11,6 @@ def simulate_roll(dice_notation, cumulative_plot, rolls=10000):
 
     results = np.array([d20.roll(dice_notation).total for _ in range(rolls)])
 
-
     totals = np.arange(results.min(), results.max() + 1)
     counts = np.array([np.sum(results == t) for t in totals])
     pdf = counts / counts.sum()
@@ -25,15 +24,16 @@ def simulate_roll(dice_notation, cumulative_plot, rolls=10000):
     if cumulative_plot == True:
         cdf = np.cumsum(pdf)
         plt.bar(totals, cdf)
-    else: 
+    else:
         plt.bar(totals, pdf)
 
     # Use the plt.legend in order to write out avg, mode and mean
-    plt.axvline(avg, color=(0,0,0,0), linestyle="--", label=f"Mean = {avg:.2f}")
-    plt.axvline(mode, color=(0,0,0,0), linestyle="--", label=f"Mode = {mode:.2f}")
-    plt.axvline(variance, color=(0,0,0,0), linestyle="--", label=f"Variance = {variance:.2f}")
+    plt.axvline(avg, color=(0, 0, 0, 0), linestyle="--", label=f"Mean = {avg:.2f}")
+    plt.axvline(mode, color=(0, 0, 0, 0), linestyle="--", label=f"Mode = {mode:.2f}")
+    plt.axvline(
+        variance, color=(0, 0, 0, 0), linestyle="--", label=f"Variance = {variance:.2f}"
+    )
     plt.legend(markerfirst=False, markerscale=0, handlelength=0)
-
 
     plt.title(f"{dice_notation} — {rolls:,} rolls")
     plt.xlabel("Roll Result")

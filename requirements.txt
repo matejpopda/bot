@@ -1,6 +1,9 @@
 py-cord
 python-dotenv
 
+# Formatter
+Black
+
 # Database 
 SQLAlchemy
 aiosqlite
