@@ -1,5 +1,7 @@
 Priority 1 (Active)
 Game statistics
+- leaderboard (who had the better score more often, best score of all time)
+- leader
 Figure out how to occasionaly post a game link
 
 Priority 2 (Concrete ideas)
@@ -8,12 +10,15 @@ Implement a command to use https://soruly.github.io/trace.moe-api/#/
 Either include memepy or write my own thing
 Photo filters
 Mood tracker
+Reminders
+
+Utility function to create utc time with discord formats 
 
 
 Priority 3 (Vague ideas)
 Economy
 Message count stats
-
+ARG
 
 Priority 4 (Polish)
 Add an on edit hook for ingesting game scores, using on_raw_message_edit

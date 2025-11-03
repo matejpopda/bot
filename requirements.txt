@@ -1,4 +1,8 @@
+# discord library
 py-cord
+pynacl # voice chat stuff doesnt work without
+
+#.env file handling
 python-dotenv
 
 # Formatter
@@ -15,10 +19,8 @@ d20
 # Plotting library for statistics
 seaborn
 
-
 # Random online functionality
 requests
 
-
 # this library is needed when running python 3.13 or above
-audioop-lts 
+audioop-lts; python_version>='3.13'

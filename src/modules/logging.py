@@ -7,8 +7,8 @@ from pathlib import Path
 
 
 def get_rotating_file_handler(file_path):
-    handler = logging.handlers.RotatingFileHandler(file_path, mode='w', maxBytes=1_000_000, backupCount=3)
-    handler.setLevel(logging.INFO)
+    handler = logging.handlers.RotatingFileHandler(file_path, mode='w', maxBytes=1_000_000, backupCount=3, encoding="utf-8")
+    handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter("[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s")
     handler.setFormatter(formatter)
     return handler
@@ -26,9 +26,14 @@ def setup_database_logging():
     logfilepath.parent.mkdir(exist_ok=True)
 
     logger = logging.getLogger('sqlalchemy')
-    logger.propagate = False
     logger.setLevel(logging.DEBUG)
-    logger.addHandler(get_rotating_file_handler(logfilepath))
+    logger.propagate = False
+
+    handler = get_rotating_file_handler(logfilepath)
+    logger.addHandler(handler)
+
+    logger = logging.getLogger("aiosqlite")
+    logger.setLevel(logging.INFO)
     
 
 def setup_discord_logging():
@@ -38,18 +43,34 @@ def setup_discord_logging():
 
     logger = logging.getLogger('discord')
     logger.propagate = False
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(get_rotating_file_handler(logfilepath))
+    logger.setLevel(logging.INFO)
 
+    handler = get_rotating_file_handler(logfilepath)
+    logger.addHandler(handler)
+    
 def setup_root_logging():
-    logfilepath = Path('logs/bot.log')
+    logfilepath = Path('logs/root.log')
 
     logfilepath.parent.mkdir(exist_ok=True)
 
     logger = logging.getLogger()
-    logger.propagate = False
     logger.setLevel(logging.DEBUG)
-    logger.addHandler(get_rotating_file_handler(logfilepath))
+
+    handler = get_rotating_file_handler(logfilepath)
+    logger.addHandler(handler)
+    
+
+def setup_announcer_logging():
+    logfilepath = Path('logs/console.log')
+
+    logfilepath.parent.mkdir(exist_ok=True)
+
+    logger = logging.getLogger("console")
+    logger.setLevel(logging.DEBUG)
+
+    handler = get_rotating_file_handler(logfilepath)
+    logger.addHandler(handler)
+    
     logger.addHandler(get_console_handler())
     
 
@@ -58,3 +79,5 @@ def setup_all_logging():
     setup_database_logging()
     setup_discord_logging()
     setup_root_logging()
+    setup_announcer_logging()
+

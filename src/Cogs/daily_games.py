@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from ..modules import gamestatistics
+from ..modules import daily_games
 import io
 import asyncio
 
@@ -11,7 +11,7 @@ class GameStatistics(commands.Cog):
         self.bot = bot
 
     command_group = discord.SlashCommandGroup(
-        "gamestats", "Statistics from daily games"
+        "dailies", "Statistics from daily games"
     )
 
     @command_group.command(description="Information about using the gamestats commands")
@@ -25,7 +25,7 @@ class GameStatistics(commands.Cog):
     @discord.option(
         "game",
         type=str,
-        choices=gamestatistics.available_games,
+        choices=daily_games.available_games,
         description="What game",
     )
     @discord.option(
@@ -69,7 +69,7 @@ class GameStatistics(commands.Cog):
         dates_instead_of_numbers,
     ):
 
-        file = await gamestatistics.generate_graph(
+        file = await daily_games.generate_graph(
             game, player_1, player_2, player_3, player_4, dates_instead_of_numbers
         )
         await ctx.response.send_message(file=file)
@@ -78,12 +78,12 @@ class GameStatistics(commands.Cog):
     @discord.option(
         "game",
         type=str,
-        choices=gamestatistics.available_games,
+        choices=daily_games.available_games,
         description="What game",
     )
     async def my_stats(self, ctx: discord.ApplicationContext, game):
         output = io.StringIO()
-        scores = await gamestatistics.raw_game_data(game, ctx.user.id)
+        scores = await daily_games.raw_game_data(game, ctx.user.id)
         for score in scores:
             output.write(
                 f"{score["date"].isoformat()} - Game {score["gamenumber"]} - Score {score["score"]}\n"
@@ -100,7 +100,7 @@ class GameStatistics(commands.Cog):
     @discord.option(
         "game",
         type=str,
-        choices=gamestatistics.available_games,
+        choices=daily_games.available_games,
         description="What game",
     )
     @discord.option(
@@ -114,7 +114,7 @@ class GameStatistics(commands.Cog):
         if user is None:
             user = ctx.user.id
 
-        scores = await gamestatistics.raw_game_data(game, user.id)
+        scores = await daily_games.raw_game_data(game, user.id)
         for score in scores:
             output.write(
                 f"{score["date"].isoformat()} - Game {score["gamenumber"]} - Score {score["score"]}\n"
@@ -132,7 +132,7 @@ class GameStatistics(commands.Cog):
     )
     async def ingest_channel_history(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
-        await gamestatistics.ingest_games_in_channel(ctx)
+        await daily_games.ingest_games_in_channel(ctx)
         await ctx.followup.send(content="Ingested", ephemeral=True)
 
     @command_group.command(
@@ -140,14 +140,14 @@ class GameStatistics(commands.Cog):
     )
     async def reingest_channel_history(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
-        await gamestatistics.reingest_games_in_channel(ctx)
+        await daily_games.reingest_games_in_channel(ctx)
         await ctx.followup.send(content="Ingested", ephemeral=True)
 
     @command_group.command(
         description="Registers channel, so it automatically saves the scores"
     )
     async def register_channel(self, ctx: discord.ApplicationContext):
-        await gamestatistics.register_channel(ctx)
+        await daily_games.register_channel(ctx)
 
         await ctx.response.send_message(
             content="Succesfully registered", ephemeral=True
@@ -157,7 +157,7 @@ class GameStatistics(commands.Cog):
         description="Unregisters channel, so it no longer automatically saves the scores"
     )
     async def unregister_channel(self, ctx: discord.ApplicationContext):
-        await gamestatistics.unregister_channel(ctx)
+        await daily_games.unregister_channel(ctx)
 
         await ctx.response.send_message(
             content="Succesfully unregistered", ephemeral=True
@@ -169,7 +169,7 @@ class GameStatistics(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        if not await gamestatistics.in_registered_channel(message):
+        if not await daily_games.in_registered_channel(message):
             return
 
-        await gamestatistics.ingest_message(message)
+        await daily_games.ingest_message(message)
