@@ -214,7 +214,6 @@ async def send_to_database(
             game_number=gamenumber,
         )
         session.add(score)
-        print(score)
 
 
 def how_many_days_since_date(past_date: datetime.date, current_date: datetime.date):
@@ -232,17 +231,24 @@ def coindle_parser(message: discord.Message) -> tuple[int, datetime.date, int] |
 
     text = message.content
 
-    date_match = re.search(r"Coindle (\d{4}-\d{2}-\d{2})", text, re.IGNORECASE)
-    streak_match = re.search(r"Streak:\s*(\d+)", text)
+    pattern = re.compile(
+        r'Coindle\s+(?P<date>\d{4}-\d{1,2}-\d{1,2})\s*?\n'
+        r'Streak:\s*(?P<streak>\d+)', 
+        re.MULTILINE
+    )
+    data = pattern.search(text)
+    if data is None:
+        return
 
-    if date_match and streak_match:
-        date_str = date_match.group(1)
-        streak = int(streak_match.group(1))
-        date_obj = datetime.date.fromisoformat(date_str)
+    result = data.groupdict()
 
-        game_num = how_many_days_since_date(COINDLE_FIRST_GAME_DATE, date_obj)
+    score = int(result['streak'])
+    date = datetime.datetime.strptime(result['date'], '%Y-%m-%d').date()
+    game_number = how_many_days_since_date(COINDLE_FIRST_GAME_DATE, date)
 
-        return streak, date_obj, game_num
+
+    return float(score), date, int(game_number)
+
 
 
 @register_parser("Minigolfle", r"MINIGOLFLE #")
@@ -283,7 +289,7 @@ def syllacrostic_parser(message: discord.Message):
     result = data.groupdict()
 
     game_number = result["game_number"]
-    
+
     time_string = result["time"]
     t = datetime.datetime.strptime(time_string, "%M:%S")
     delta = datetime.timedelta(hours=t.hour, minutes=t.minute, seconds=t.second)
@@ -404,7 +410,6 @@ def wiki_game_daily_time_parser(message: discord.Message):
 
     text = message.content
 
-    print(text)
 
     pattern = re.compile(
         r"⏰\s*(?P<time>\d{1,2}:\d{2}(?::\d{2})?)\D*?🦶\s*(?P<steps>\d+)", re.MULTILINE

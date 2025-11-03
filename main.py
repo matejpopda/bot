@@ -9,12 +9,11 @@ import src.Cogs.debug as debug
 import src.Cogs.ttrpgtools as ttrpgtools
 import src.Cogs.fun as fun
 
-from io import BytesIO
 
-from src.modules.database import engine, Base
-from src.modules import formatting
+import src.modules.database 
 
 import src.modules.logging
+import  src.modules.formatting  
 
 integration_types = set(
     [discord.IntegrationType.guild_install, discord.IntegrationType.user_install]
@@ -24,18 +23,19 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
 
 async def main():
-    await init_db()
+    src.modules.logging.setup_all_logging()
+    src.modules.formatting.set_default_graph_formatting()
 
     config = dotenv.dotenv_values()
     bot = commands.Bot(
-        default_command_integration_types=integration_types, intents=intents
+        default_command_integration_types=integration_types, 
+        intents=intents
     )
+
+    await src.modules.database.init_db()
 
     bot.add_cog(debug.Debug(bot))
     bot.add_cog(gamestatistics.GameStatistics(bot))
@@ -46,8 +46,6 @@ async def main():
 
 
 if __name__ == "__main__":
-    src.modules.logging.setup_all_logging()
-
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

@@ -9,6 +9,7 @@ Either include memepy or write my own thing
 Photo filters
 Mood tracker
 
+
 Priority 3 (Vague ideas)
 Economy
 Message count stats
@@ -17,6 +18,10 @@ Message count stats
 Priority 4 (Polish)
 Add an on edit hook for ingesting game scores, using on_raw_message_edit
 
+
+Priority 5 (Known ignored issues)
 In gamestatistics.py, when registering the parser its not possible to have 2 games share the same regex because of dictionary. Should be fixed by swapping the datastructure. (Currently just avoiding the collisions by slightly modifying the regex) 
 
-Pips game number is different for some users. Most likely based on their locale and such. Its impossible to distinguish manually.
+
+Issues: 
+Pips game number is different for some users. Most likely based on their locale and such. Very likely to distinguish manually
