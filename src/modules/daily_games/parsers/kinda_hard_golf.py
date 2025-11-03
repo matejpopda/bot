@@ -8,18 +8,18 @@ KINDA_HARD_GOLF_ORIGIN_DATE = datetime.date(day=1, month=3, year=2025)
 
 
 
-
+pattern = re.compile(
+    r"^kindahard\.golf\s+(?P<date>\d{1,2}/\d{1,2})"
+    r"(?:\s*\n+[\s📝]*(?P<total>\d+))?",
+    re.MULTILINE,
+)
 
 
 @register_parser("Kinda Hard Golf", r"kindahard.golf")
 def kinda_hard_golf_parser(message: discord.Message):
 
     text = message.content
-    pattern = re.compile(
-        r"^kindahard\.golf\s+(?P<date>\d{1,2}/\d{1,2})"
-        r"(?:\s*\n+[\s📝]*(?P<total>\d+))?",
-        re.MULTILINE,
-    )
+
 
     data = pattern.search(text)
     if data is None:

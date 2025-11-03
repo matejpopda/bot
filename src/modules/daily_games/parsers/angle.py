@@ -8,17 +8,17 @@ ANGLE_ORIGIN_DATE = datetime.date(day=21, month=6, year=2022)
 
 
 
-
+pattern = re.compile(
+    r"^#?(?P<game>Angle)\s+#?(?P<number>[\d,]+)\s+(?P<guesses>[\dX]+)(?:/\d+|/∞)?",
+    re.MULTILINE,
+)
 
 
 @register_parser("Angle", r"#Angle")
 def angle_parser(message: discord.Message):
 
     text = message.content
-    pattern = re.compile(
-        r"^#?(?P<game>Angle)\s+#?(?P<number>[\d,]+)\s+(?P<guesses>[\dX]+)(?:/\d+|/∞)?",
-        re.MULTILINE,
-    )
+
 
     data = pattern.search(text)
     if data is None:

@@ -6,15 +6,15 @@ from ..daily_games import register_parser
 
 BANDLE_ORIGIN_DATE = datetime.date(day=17, month=8, year=2022)
 
+pattern = re.compile(
+    r"^Bandle\s+#(?P<number>\d+)\s+(?P<score>[0-9x])/", re.MULTILINE
+)
 
 
 @register_parser("Bandle", r"Bandle #")
 def bandle_parser(message: discord.Message):
 
     text = message.content
-    pattern = re.compile(
-        r"^Bandle\s+#(?P<number>\d+)\s+(?P<score>[0-9x])/", re.MULTILINE
-    )
 
     data = pattern.search(text)
     if data is None:

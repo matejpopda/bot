@@ -10,16 +10,16 @@ TIMDLE_ORIGIN_DATE = datetime.date(
     day=26, month=1, year=2025
 )  # Based on wayback machine its somewhere between december 2024 and this date
 
+pattern = re.compile(
+    r"^(?P<game>TIMDLE)\s+(?P<date>[A-Za-z]+ \d+)[\r\n]+.?\s+(?P<score>\d+)/(?P<max_score>\d+)",
+    re.MULTILINE,
+)
 
 @register_parser("Timdle", r"TIMDLE")
 def timdle_parser(message: discord.Message):
 
     text = message.content
 
-    pattern = re.compile(
-        r"^(?P<game>TIMDLE)\s+(?P<date>[A-Za-z]+ \d+)[\r\n]+.?\s+(?P<score>\d+)/(?P<max_score>\d+)",
-        re.MULTILINE,
-    )
 
     data = pattern.search(text)
     if data is None:

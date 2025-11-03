@@ -6,19 +6,19 @@ from ..daily_games import register_parser
 
 REVEALED_ORIGIN_DATE = datetime.date(day=6, month=10, year=2025)
 
-
+pattern = re.compile(
+    r"(?m)^REVEALED:\s*(?P<date_str>[A-Za-z]+ \d{1,2}, \d{4})\s*.*?"
+    r"(?:I solved it in\s*(?P<reveals_raw>[\d️⃣]+)\s*Reveals\s*&\s*(?P<hints_raw>[\d️⃣]+)\s*Hints|"
+    r"I couldn’t solve it.*?)",
+    re.DOTALL,
+)
 
 
 @register_parser("Revealed", r"REVEALED: ")
 def revealed_parser(message: discord.Message):
     text = message.content
 
-    pattern = re.compile(
-        r"(?m)^REVEALED:\s*(?P<date_str>[A-Za-z]+ \d{1,2}, \d{4})\s*.*?"
-        r"(?:I solved it in\s*(?P<reveals_raw>[\d️⃣]+)\s*Reveals\s*&\s*(?P<hints_raw>[\d️⃣]+)\s*Hints|"
-        r"I couldn’t solve it.*?)",
-        re.DOTALL,
-    )
+
 
     data = pattern.search(text)
     if data is None:

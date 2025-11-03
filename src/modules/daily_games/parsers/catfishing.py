@@ -6,15 +6,17 @@ from ..daily_games import register_parser
 
 CATFISHING_ORIGIN_DATE = datetime.date(day=23, month=6, year=2024)
 
+pattern = re.compile(
+    r"#(?P<game_number>\d+)\s*-\s*(?P<score>\d+(?:\.\d+)?)/(?P<max_score>\d+)",
+    re.MULTILINE,
+)
+
 @register_parser("Catfishing", r"catfishing.net")
 def catfishing_parser(message: discord.Message):
 
     text = message.content
 
-    pattern = re.compile(
-        r"#(?P<game_number>\d+)\s*-\s*(?P<score>\d+(?:\.\d+)?)/(?P<max_score>\d+)",
-        re.MULTILINE,
-    )
+
 
     data = pattern.search(text)
     if data is None:

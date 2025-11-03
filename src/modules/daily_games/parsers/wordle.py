@@ -9,15 +9,15 @@ WORDLE_ORIGIN_DATE = datetime.date(day=19, month=6, year=2021)
 
 
 
+pattern = re.compile(
+    r"^Wordle\s+(?P<number>[\d,]+)\s+(?P<guesses>[\dX]+)(?:/\d+|/∞)?", re.MULTILINE
+)
+
 
 @register_parser("Wordle", r"Wordle")
 def wiki_game_daily_step_parser(message: discord.Message):
 
     text = message.content
-
-    pattern = re.compile(
-        r"^Wordle\s+(?P<number>[\d,]+)\s+(?P<guesses>[\dX]+)(?:/\d+|/∞)?", re.MULTILINE
-    )
 
     data = pattern.search(text)
     if data is None:

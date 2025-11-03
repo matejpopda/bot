@@ -6,15 +6,17 @@ from ..daily_games import register_parser
 
 SYLLACROSTIC_ORIGIN_DATE = datetime.date(day=28, month=3, year=2023)
 
+pattern = re.compile(
+    r"(?:(?P<title>[A-Z ]+)\s+)?#(?P<game_number>\d+)[\r\n]+[-\s]+[\r\n]+⏱️:\s*(?P<time>\d{2}:\d{2})(?:[\r\n]+[-\s]+)?(?:[\r\n]+(?P<date>\d{4}-\d{2}-\d{2}))?",
+    re.MULTILINE,
+)
+
 @register_parser("Syllacrostic", r"www.syllacrostic.com")
 def syllacrostic_parser(message: discord.Message):
 
     text = message.content
 
-    pattern = re.compile(
-        r"(?:(?P<title>[A-Z ]+)\s+)?#(?P<game_number>\d+)[\r\n]+[-\s]+[\r\n]+⏱️:\s*(?P<time>\d{2}:\d{2})(?:[\r\n]+[-\s]+)?(?:[\r\n]+(?P<date>\d{4}-\d{2}-\d{2}))?",
-        re.MULTILINE,
-    )
+
 
     data = pattern.search(text)
     if data is None:

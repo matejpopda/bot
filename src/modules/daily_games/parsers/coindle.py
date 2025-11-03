@@ -6,6 +6,11 @@ from ..daily_games import register_parser
 
 COINDLE_FIRST_GAME_DATE = datetime.date(year=2025, month=10, day=8)
 
+pattern = re.compile(
+    r'Coindle\s+(?P<date>\d{4}-\d{1,2}-\d{1,2})\s*?\n'
+    r'Streak:\s*(?P<streak>\d+)', 
+    re.MULTILINE
+)
 
 
 @register_parser("Coindle", r"Coindle")
@@ -13,11 +18,7 @@ def coindle_parser(message: discord.Message) -> tuple[int, datetime.date, int] |
 
     text = message.content
 
-    pattern = re.compile(
-        r'Coindle\s+(?P<date>\d{4}-\d{1,2}-\d{1,2})\s*?\n'
-        r'Streak:\s*(?P<streak>\d+)', 
-        re.MULTILINE
-    )
+
     data = pattern.search(text)
     if data is None:
         return

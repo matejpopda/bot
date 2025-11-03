@@ -6,16 +6,16 @@ from ..daily_games import register_parser
 
 COSTCODLE_ORIGIN_DATE = datetime.date(day=19, month=9, year=2023)
 
-
+pattern = re.compile(
+    r"^(?P<game>Costcodle)\s+#?(?P<number>[\d,]+)\s+(?P<guesses>[\dX]+)(?:/\d+|/∞)?",
+    re.MULTILINE,
+)
 
 @register_parser("Costcodle", r"Costcodle")
 def costcodle_parser(message: discord.Message):
 
     text = message.content
-    pattern = re.compile(
-        r"^(?P<game>Costcodle)\s+#?(?P<number>[\d,]+)\s+(?P<guesses>[\dX]+)(?:/\d+|/∞)?",
-        re.MULTILINE,
-    )
+
 
     data = pattern.search(text)
     if data is None:

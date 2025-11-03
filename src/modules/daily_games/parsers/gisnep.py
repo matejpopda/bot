@@ -5,17 +5,17 @@ from .. import utils
 from ..daily_games import register_parser
 
 
-
+pattern = re.compile(
+    r"in (?P<time>\d{1,2}:\d{2})\..*?\n"
+    r"No\.\s*(?P<number>\d+)\s*\|\s*(?P<date>.+?)\s*\n",
+    re.DOTALL,
+)
 
 @register_parser("Gisnep!", r"s #Gisnep in")
 def gisnep_parser(message: discord.Message):
 
     text = message.content
-    pattern = re.compile(
-        r"in (?P<time>\d{1,2}:\d{2})\..*?\n"
-        r"No\.\s*(?P<number>\d+)\s*\|\s*(?P<date>.+?)\s*\n",
-        re.DOTALL,
-    )
+
 
     data = pattern.search(text)
 

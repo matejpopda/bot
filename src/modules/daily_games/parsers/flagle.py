@@ -7,15 +7,15 @@ from ..daily_games import register_parser
 FLAGLE_ORIGIN_DATE = datetime.date(day=14, month=3, year=2022)
 
 
+pattern = re.compile(
+    r"Flagle\s+#(?P<number>\d+)\s*-\s*(?P<score>\d|X)/6.*?\n", re.DOTALL
+)
 
 
 @register_parser("Flagle", r"flagle-game.com")
 def flagle_parser(message: discord.Message):
 
     text = message.content
-    pattern = re.compile(
-        r"Flagle\s+#(?P<number>\d+)\s*-\s*(?P<score>\d|X)/6.*?\n", re.DOTALL
-    )
 
     data = pattern.search(text)
 

@@ -6,7 +6,10 @@ from ..daily_games import register_parser
 
 PIPS_ORIGIN_DATE = datetime.date(day=18, month=8, year=2025)
 
-
+pattern = re.compile(
+    r"^Pips\s+#(?P<number>\d+)\s+(?P<difficulty>Hard|Medium|Easy).*?\n(?P<score>\d{1,2}:\d{2})",
+    re.MULTILINE,
+)
 
 
 @register_parser("Pips - Hard", r"^Pips\s+#\d+\s+Hard")
@@ -15,10 +18,7 @@ PIPS_ORIGIN_DATE = datetime.date(day=18, month=8, year=2025)
 def pips_parser(message: discord.Message):
 
     text = message.content
-    pattern = re.compile(
-        r"^Pips\s+#(?P<number>\d+)\s+(?P<difficulty>Hard|Medium|Easy).*?\n(?P<score>\d{1,2}:\d{2})",
-        re.MULTILINE,
-    )
+
 
     data = pattern.search(text)
     if data is None:
