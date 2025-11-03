@@ -14,8 +14,7 @@ from io import BytesIO
 from src.modules.database import engine, Base
 from src.modules import formatting
 
-import src.modules.gamestatistics
-
+import src.modules.logging
 
 integration_types = set(
     [discord.IntegrationType.guild_install, discord.IntegrationType.user_install]
@@ -47,7 +46,9 @@ async def main():
 
 
 if __name__ == "__main__":
+    src.modules.logging.setup_all_logging()
+
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("Bot shutting down...")
+        logging.info("Bot shutting down...")

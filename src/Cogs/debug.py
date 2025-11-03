@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import logging
 
 
 class Debug(commands.Cog):
@@ -9,4 +10,4 @@ class Debug(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"We have logged in as {self.bot.user}")
+        logging.info(f"We have logged in as {self.bot.user}")
