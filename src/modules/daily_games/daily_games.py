@@ -66,9 +66,9 @@ async def ingest_message(message: discord.Message):
         )
 
 
-async def ingest_games_in_channel(ctx: discord.ApplicationContext):
+async def ingest_games_in_channel(ctx: discord.ApplicationContext, limit=None):
     channel: discord.interactions.InteractionChannel = ctx.channel
-    async for msg in channel.history(limit=None):
+    async for msg in channel.history(limit=limit):
         if msg.author.bot == True:
             continue
         await ingest_message(msg)

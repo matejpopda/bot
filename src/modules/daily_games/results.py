@@ -12,6 +12,7 @@ from .. import database
 
 
 import matplotlib.pyplot as plt
+import seaborn as sns
 import io
 import discord
 
@@ -20,9 +21,9 @@ import re
 from .models import Scores
 
 
+import pandas as pd
 
-
-async def raw_game_data(game: str, user_id):
+async def raw_game_user_data(game: str, user_id):
     async with database.AsyncSessionLocal.begin() as session:
         session: AsyncSession
 
@@ -40,6 +41,7 @@ async def raw_game_data(game: str, user_id):
                     "score": score.score,
                     "date": score.date_of_game,
                     "gamenumber": score.game_number,
+                    "user_id": score.user_id
                 }
             )
 
@@ -51,43 +53,63 @@ async def raw_game_data(game: str, user_id):
 
 
 type User = discord.SlashCommandOptionType.user
-async def generate_graph(
+async def generate_multiuser_graph(
     game: str,
     player_1: User,
     player_2: User | None,
     player_3: User | None,
     player_4: User | None,
-    dates_instead_of_numbers: bool,
+    dates_instead_of_numbers: bool= False,
+    scatter_instead_of_line:bool = False,
 ):
 
-    plt.figure(figsize=(6, 4))
-    plt.title(f"{game} scores")
-    plt.ylabel("Score")
+    all_scores = []
+    players = set([x for x in (player_1, player_2, player_3, player_4) if x is not None])
 
-    for index, player in enumerate([player_1, player_2, player_3, player_4]):
+    for index, player in enumerate(players.copy()):
 
         if player is None:
             continue
 
-        scores = await raw_game_data(game, player.id)
+        scores = await raw_game_user_data(game, player.id)
 
-        if dates_instead_of_numbers:
-            scores_x = [x["date"] for x in scores]
-            plt.xlabel("Date")
+        if len(scores) == 0:
+            players.remove(player)
+            continue
 
-        else:
-            scores_x = [x["gamenumber"] for x in scores]
-            plt.xlabel("Game number")
+        all_scores.extend(scores)
 
-        scores_y = [x["score"] for x in scores]
+    if len(all_scores) == 0:
+        raise ValueError("Trying to generate graph from no data")
 
-        plt.plot(scores_x, scores_y, marker="o", label=f"{player.name}")
+    data = pd.DataFrame(all_scores)
 
-    plt.legend()
+    for player in players:
+        data = data.replace(player.id, player.name)
+
+    data = data.rename(columns={"score":"Score", "user_id":"User", "date":"Date", "gamenumber":"Game Number"})
+
+
+    if dates_instead_of_numbers:
+        x = "Date"
+    else:
+        x = "Game Number"
+
+    if scatter_instead_of_line:
+        kind = "scatter"
+        markers = True
+    else:
+        kind = "line"
+        markers = ["o" for x in players]
+
+    g = sns.relplot(data, y="Score", x=x, style="User", hue="User", kind=kind, facet_kws={"legend_out":False}, aspect=1.5, markers=markers, dashes=False)
+
+        
+    g.figure.subplots_adjust(top=.92)
+    g.figure.suptitle(f'Game scores for {game}')
 
     buf = io.BytesIO()
-    plt.savefig(buf, format="png", dpi=200)
+    g.savefig(buf, format="png", dpi=200)
     buf.seek(0)
-    plt.close()
     file = discord.File(buf, filename="score-history.png")
     return file

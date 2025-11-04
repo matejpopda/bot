@@ -4,6 +4,7 @@ from ..modules import daily_games
 import io
 import asyncio
 
+import sqlalchemy.exc
 
 class GameStatistics(commands.Cog):
 
@@ -58,7 +59,13 @@ class GameStatistics(commands.Cog):
         default=False,
         description="Plot against dates instead of game numbers.",
     )
-    async def statistics(
+    @discord.option(
+        "scatter_instead_of_line",
+        type=bool,
+        default=False,
+        description="Make a scatter plot instead of a line plot.",
+    )
+    async def graph(
         self,
         ctx: discord.ApplicationContext,
         game,
@@ -66,37 +73,20 @@ class GameStatistics(commands.Cog):
         player_2,
         player_3,
         player_4,
-        dates_instead_of_numbers,
+        dates_instead_of_numbers,scatter_instead_of_line,
     ):
 
-        file = await daily_games.generate_graph(
-            game, player_1, player_2, player_3, player_4, dates_instead_of_numbers
-        )
-        await ctx.response.send_message(file=file)
-
-    @command_group.command(description="Returns your scores in a game.")
-    @discord.option(
-        "game",
-        type=str,
-        choices=daily_games.available_games,
-        description="What game",
-    )
-    async def my_stats(self, ctx: discord.ApplicationContext, game):
-        output = io.StringIO()
-        scores = await daily_games.raw_game_data(game, ctx.user.id)
-        for score in scores:
-            output.write(
-                f"{score["date"].isoformat()} - Game {score["gamenumber"]} - Score {score["score"]}\n"
+        try:
+            file = await daily_games.generate_multiuser_graph(
+                game, player_1, player_2, player_3, player_4, dates_instead_of_numbers, scatter_instead_of_line
             )
+            await ctx.response.send_message(file=file)
+        except ValueError as e: 
+            await ctx.response.send_message("No scores found for selected users. They most likely weren't ingested.", ephemeral=True)
 
-        output.seek(0)
-        file = discord.File(fp=output, filename="results.txt")
 
-        await ctx.response.send_message(
-            content=f"Here are your scores for {game}", ephemeral=True, file=file
-        )
 
-    @command_group.command(description="Returns scores in a game for a user.")
+    @command_group.command(description="Returns users scores in a game.")
     @discord.option(
         "game",
         type=str,
@@ -107,25 +97,38 @@ class GameStatistics(commands.Cog):
         "user",
         type=discord.SlashCommandOptionType.user,
         description="User, defauls to you.",
+        required=False
     )
-    async def user_stats(self, ctx: discord.ApplicationContext, game, user):
+    @discord.option("format", type=str, choices=["human-readable", "csv"], default="human-readable", description="Output format")
+    @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
+    async def user_stats(self, ctx: discord.ApplicationContext, game, user, format, ephemeral):
         output = io.StringIO()
 
         if user is None:
-            user = ctx.user.id
+            user = ctx.user
 
-        scores = await daily_games.raw_game_data(game, user.id)
+        scores = await daily_games.raw_game_user_data(game, user.id)
+
+        if format == "csv":
+            output.write("date, game_number, score\n")
         for score in scores:
+            match format:
+                case "human-readable":
+                    line = f"{score["date"].isoformat()} - Game {score["gamenumber"]} - Score {score["score"]}\n"
+                case "csv":
+                    line = f"{score["date"].isoformat()}, {score["gamenumber"]}, {score["score"]}\n"
+
             output.write(
-                f"{score["date"].isoformat()} - Game {score["gamenumber"]} - Score {score["score"]}\n"
+                line
             )
 
         output.seek(0)
-        file = discord.File(fp=output, filename="results.txt")
+        file = discord.File(fp=output, filename=f"{game}-scores-for-{user.name}.txt")
 
         await ctx.response.send_message(
-            content=f"Here are your scores for {game}", ephemeral=True, file=file
+            content=f"Here are {user.display_name} scores for {game}", ephemeral=ephemeral, file=file
         )
+
 
     @command_group.command(
         description="Goes through all the messages in the channel and saves them"
@@ -136,32 +139,47 @@ class GameStatistics(commands.Cog):
         await ctx.followup.send(content="Ingested", ephemeral=True)
 
     @command_group.command(
-        description="Goes through all the messages in the channel and saves them"
+        description="Deletes all data from a channel and then ingests them again."
     )
     async def reingest_channel_history(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
         await daily_games.reingest_games_in_channel(ctx)
         await ctx.followup.send(content="Ingested", ephemeral=True)
 
+
     @command_group.command(
-        description="Registers channel, so it automatically saves the scores"
+        description="Registers channel, so it automatically saves the scores."
     )
     async def register_channel(self, ctx: discord.ApplicationContext):
-        await daily_games.register_channel(ctx)
+            
+        try:
+            await daily_games.register_channel(ctx)
+            await ctx.response.send_message(
+                content="Succesfully registered", ephemeral=True
+            )
 
-        await ctx.response.send_message(
-            content="Succesfully registered", ephemeral=True
-        )
+        except sqlalchemy.exc.NoResultFound as e:
+            await ctx.response.send_message(
+                content="Failed to register. Channel already in database.", ephemeral=True
+            )
+
 
     @command_group.command(
         description="Unregisters channel, so it no longer automatically saves the scores"
     )
     async def unregister_channel(self, ctx: discord.ApplicationContext):
-        await daily_games.unregister_channel(ctx)
 
-        await ctx.response.send_message(
-            content="Succesfully unregistered", ephemeral=True
-        )
+        try:
+            await daily_games.unregister_channel(ctx)
+
+            await ctx.response.send_message(
+                content="Succesfully unregistered", ephemeral=True
+            )
+        except sqlalchemy.exc.NoResultFound as e:
+            await ctx.response.send_message(
+                content="Failed to unregister. Channel was not registered.", ephemeral=True
+            )
+
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
