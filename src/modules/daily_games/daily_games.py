@@ -134,6 +134,26 @@ async def send_score_to_database(
         session.add(score)
 
 
+link_association = [
+    ("Betweenle" , ("https://betweenle.com/", "https://www.betweenle.com/")),
+    ("REVEALED", ("https://www.britannica.com/games/revealed", "https://britannica.com/games/revealed")),
+    ("VideoPuzzle.org", ("https://videopuzzle.org/", "https://www.videopuzzle.org/")),
+    ("catfishing.net", ("https://catfishing.net/", "https://www.catfishing.net/")),
+    ("syllacrostic.com", ("https://syllacrostic.com/", "https://www.syllacrostic.com/"))
+
+]
+async def get_a_fixed_link(message: discord.Message) -> str|None:
+    for broken, fixed_messages in link_association:
+        if broken in message.content:
+            async for msg in message.channel.history(limit=25):
+                for fixed in fixed_messages:
+                    if fixed in msg.content:
+                        return
+            return fixed_messages[0]
+            
+    
+
+
 
 
 

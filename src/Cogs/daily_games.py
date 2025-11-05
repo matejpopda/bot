@@ -158,7 +158,7 @@ class GameStatistics(commands.Cog):
                 content="Succesfully registered", ephemeral=True
             )
 
-        except sqlalchemy.exc.NoResultFound as e:
+        except sqlalchemy.exc.IntegrityError as e:
             await ctx.response.send_message(
                 content="Failed to register. Channel already in database.", ephemeral=True
             )
@@ -191,3 +191,8 @@ class GameStatistics(commands.Cog):
             return
 
         await daily_games.ingest_message(message)
+
+        fixed_link = await daily_games.get_a_fixed_link(message)
+        if fixed_link is not None:
+            await message.channel.send(f"<{fixed_link}>")
+

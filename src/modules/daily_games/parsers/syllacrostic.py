@@ -11,6 +11,8 @@ pattern = re.compile(
     re.MULTILINE,
 )
 
+
+@register_parser("Syllacrostic", r"https://syllacrostic.com/")
 @register_parser("Syllacrostic", r"www.syllacrostic.com")
 def syllacrostic_parser(message: discord.Message):
 
