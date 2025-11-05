@@ -65,7 +65,7 @@ class GameStatistics(commands.Cog):
         default=False,
         description="Make a scatter plot instead of a line plot.",
     )
-    async def graph(
+    async def multi_graph(
         self,
         ctx: discord.ApplicationContext,
         game,
@@ -84,6 +84,52 @@ class GameStatistics(commands.Cog):
         except ValueError as e: 
             await ctx.response.send_message("No scores found for selected users. They most likely weren't ingested.", ephemeral=True)
 
+
+
+    @command_group.command(
+        description="Post a users graph with game scores. Make sure you ingested them first, see /gamestats help."
+    )
+    @discord.option(
+        "game",
+        type=str,required=True,
+        choices=daily_games.available_games,
+        description="What game",
+    )
+
+    @discord.option(
+        "user",
+        type=discord.SlashCommandOptionType.user,
+        required=True,
+        description="User",
+    )
+    @discord.option(
+        "graph_type",
+        type=str,
+        choices=daily_games.user_graph_types,
+        description="What graph to draw",
+    )
+    @discord.option(
+        "dates_instead_of_numbers",
+        type=bool,
+        default=False,
+        description="Plot against dates instead of game numbers.",
+    )
+    async def user_graph(
+        self,
+        ctx: discord.ApplicationContext,
+        game,
+        user,
+        graph_type,
+        dates_instead_of_numbers,
+    ):
+
+        try:
+            file = await daily_games.generate_user_graph(
+                game, user, graph_type, dates_instead_of_numbers
+            )
+            await ctx.response.send_message(file=file)
+        except ValueError as e: 
+            await ctx.response.send_message("No scores found for selected users. They most likely weren't ingested.", ephemeral=True)
 
 
     @command_group.command(description="Returns users scores in a game.")

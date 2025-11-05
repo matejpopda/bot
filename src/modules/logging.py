@@ -72,7 +72,12 @@ def setup_announcer_logging():
     logger.addHandler(handler)
     
     logger.addHandler(get_console_handler())
+
+def setup_ignoring_of_loggers():
+    logging.getLogger("matplotlib.font_manager").propagate = False
+    logging.getLogger("PIL.PngImagePlugin").propagate = False
     
+
 
 
 def setup_all_logging():
@@ -80,4 +85,5 @@ def setup_all_logging():
     setup_discord_logging()
     setup_root_logging()
     setup_announcer_logging()
+    setup_ignoring_of_loggers()
 
