@@ -3,8 +3,23 @@ import discord
 import re
 from .. import utils
 from ..daily_games import register_parser
+from ..daily_games import add_game_info
 
 FOODGUESSR_ORIGIN_DATE = datetime.date(day=22, month=7, year=2023)
+game_name = "Foodguessr"
+
+
+game_info = utils.GameInfo(
+    game_name=game_name,
+    fail_score=None,
+    lower_score_is_better=False,
+    score_name="Points gained",
+    url="https://www.foodguessr.com/",
+    description="Guess where the dish is from.",
+)
+
+add_game_info(game_name, game_info)
+
 
 pattern = re.compile(
     r"I got (?P<total_score>[\d,]+) on the FoodGuessr Daily!.*?\n"  # total score
@@ -14,8 +29,7 @@ pattern = re.compile(
 )
 
 
-
-@register_parser("Foodguessr", r"on the FoodGuessr Daily!")
+@register_parser(game_name, r"on the FoodGuessr Daily!")
 def foodguessr_parser(message: discord.Message):
 
     text = message.content

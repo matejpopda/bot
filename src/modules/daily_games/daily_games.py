@@ -1,4 +1,3 @@
-
 import discord
 import datetime
 import re
@@ -6,6 +5,7 @@ from typing import Callable
 import discord
 import datetime
 import logging
+import utils
 
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy
@@ -73,6 +73,7 @@ async def ingest_games_in_channel(ctx: discord.ApplicationContext, limit=None):
             continue
         await ingest_message(msg)
 
+
 async def release_games_in_channel(ctx: discord.ApplicationContext):
     async with database.AsyncSessionLocal.begin() as session:
         channel: discord.interactions.InteractionChannel = ctx.channel
@@ -80,11 +81,21 @@ async def release_games_in_channel(ctx: discord.ApplicationContext):
             sqlalchemy.delete(Scores).where(Scores.channel_id == channel.id)
         )
 
+
 async def reingest_games_in_channel(ctx: discord.ApplicationContext):
     await release_games_in_channel(ctx)
     await ingest_games_in_channel(ctx)
 
 
+game_info: dict[str, utils.GameInfo] = {}
+
+
+def add_game_info(game_name: str, info: utils.GameInfo):
+    game_info[game_name] = info
+
+
+def get_game_info(game_name: str):
+    return game_info[game_name]
 
 
 async def register_channel(ctx: discord.ApplicationContext):
@@ -98,6 +109,7 @@ async def register_channel(ctx: discord.ApplicationContext):
         session.add(channel)
     return
 
+
 async def unregister_channel(ctx: discord.ApplicationContext):
     # sqlalchemy.exc.NoResultFound
     async with database.AsyncSessionLocal.begin() as session:
@@ -110,7 +122,6 @@ async def in_registered_channel(message: discord.Message):
         session: AsyncSession
         result = await session.get(RegisteredChannels, message.channel.id)
         return result is not None
-
 
 
 async def send_score_to_database(
@@ -135,14 +146,24 @@ async def send_score_to_database(
 
 
 link_association = [
-    ("Betweenle" , ("https://betweenle.com/", "https://www.betweenle.com/")),
-    ("REVEALED", ("https://www.britannica.com/games/revealed", "https://britannica.com/games/revealed")),
+    ("Betweenle", ("https://betweenle.com/", "https://www.betweenle.com/")),
+    (
+        "REVEALED",
+        (
+            "https://www.britannica.com/games/revealed",
+            "https://britannica.com/games/revealed",
+        ),
+    ),
     ("VideoPuzzle.org", ("https://videopuzzle.org/", "https://www.videopuzzle.org/")),
     ("catfishing.net", ("https://catfishing.net/", "https://www.catfishing.net/")),
-    ("syllacrostic.com", ("https://syllacrostic.com/", "https://www.syllacrostic.com/"))
-
+    (
+        "syllacrostic.com",
+        ("https://syllacrostic.com/", "https://www.syllacrostic.com/"),
+    ),
 ]
-async def get_a_fixed_link(message: discord.Message) -> str|None:
+
+
+async def get_a_fixed_link(message: discord.Message) -> str | None:
     for broken, fixed_messages in link_association:
         if broken in message.content:
             async for msg in message.channel.history(limit=25):
@@ -150,12 +171,3 @@ async def get_a_fixed_link(message: discord.Message) -> str|None:
                     if fixed in msg.content:
                         return
             return fixed_messages[0]
-            
-    
-
-
-
-
-
-
-

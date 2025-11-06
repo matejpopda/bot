@@ -3,8 +3,27 @@ import discord
 import re
 from .. import utils
 from ..daily_games import register_parser
+from ..daily_games import add_game_info
 
 PIPS_ORIGIN_DATE = datetime.date(day=18, month=8, year=2025)
+easy_game_name = "Pips - Easy"
+medium_game_name = "Pips - Medium"
+hard_game_name = "Pips - Hard"
+
+
+game_info = utils.GameInfo(
+    game_name="Pips",
+    fail_score=False,
+    lower_score_is_better=True,
+    score_name="Time taken",
+    url="https://www.nytimes.com/games/pips",
+    description="Place every domino in the right spot.",
+)
+
+add_game_info(easy_game_name, game_info)
+add_game_info(medium_game_name, game_info)
+add_game_info(hard_game_name, game_info)
+
 
 pattern = re.compile(
     r"^Pips\s+#(?P<number>\d+)\s+(?P<difficulty>Hard|Medium|Easy).*?\n(?P<score>\d{1,2}:\d{2})",
@@ -12,13 +31,12 @@ pattern = re.compile(
 )
 
 
-@register_parser("Pips - Hard", r"^Pips\s+#\d+\s+Hard")
-@register_parser("Pips - Medium", r"^Pips\s+#\d+\s+Medium")
-@register_parser("Pips - Easy", r"^Pips\s+#\d+\s+Easy")
+@register_parser(hard_game_name, r"^Pips\s+#\d+\s+Hard")
+@register_parser(medium_game_name, r"^Pips\s+#\d+\s+Medium")
+@register_parser(easy_game_name, r"^Pips\s+#\d+\s+Easy")
 def pips_parser(message: discord.Message):
 
     text = message.content
-
 
     data = pattern.search(text)
     if data is None:

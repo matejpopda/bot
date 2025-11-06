@@ -3,8 +3,22 @@ import discord
 import re
 from .. import utils
 from ..daily_games import register_parser
+from ..daily_games import add_game_info
 
 FLAGLE_ORIGIN_DATE = datetime.date(day=14, month=3, year=2022)
+game_name = "Flagle"
+
+
+game_info = utils.GameInfo(
+    game_name=game_name,
+    fail_score=7,
+    lower_score_is_better=True,
+    score_name="Number of guesses",
+    url="https://flagle-game.com/daily",
+    description="Guess the flag!",
+)
+
+add_game_info(game_name, game_info)
 
 
 pattern = re.compile(
@@ -12,7 +26,7 @@ pattern = re.compile(
 )
 
 
-@register_parser("Flagle", r"flagle-game.com")
+@register_parser(game_name, r"flagle-game.com")
 def flagle_parser(message: discord.Message):
 
     text = message.content

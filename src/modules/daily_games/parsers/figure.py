@@ -3,13 +3,27 @@ import discord
 import re
 from .. import utils
 from ..daily_games import register_parser
+from ..daily_games import add_game_info
 
 FIGURE_ORIGIN_DATE = datetime.date(day=26, month=6, year=2022)
+game_name = "Figure"
+
+
+game_info = utils.GameInfo( game_name=game_name
+                            ,fail_score=None
+                            ,lower_score_is_better=True
+                            ,score_name="Number of tries" 
+                            ,url="https://figure.game/"
+                            ,description="Puzzle game where you need to clear the gameboard."
+                            )
+
+add_game_info(game_name, game_info)
 
 
 
 
-@register_parser("Figure", r"figure.game")
+
+@register_parser(game_name, r"figure.game")
 def figure_parser(message: discord.Message):
 
     text = message.content

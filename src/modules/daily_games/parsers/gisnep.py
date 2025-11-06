@@ -3,6 +3,21 @@ import discord
 import re
 from .. import utils
 from ..daily_games import register_parser
+from ..daily_games import add_game_info
+
+game_name = "Gisnep!"
+
+
+game_info = utils.GameInfo(
+    game_name=game_name,
+    fail_score=None,
+    lower_score_is_better=True,
+    score_name="Time",
+    url="https://gisnep.com/",
+    description="Figure out the quote based on few rules.",
+)
+
+add_game_info(game_name, game_info)
 
 
 pattern = re.compile(
@@ -11,11 +26,11 @@ pattern = re.compile(
     re.DOTALL,
 )
 
-@register_parser("Gisnep!", r"s #Gisnep in")
+
+@register_parser(game_name, r"s #Gisnep in")
 def gisnep_parser(message: discord.Message):
 
     text = message.content
-
 
     data = pattern.search(text)
 

@@ -3,8 +3,21 @@ import discord
 import re
 from .. import utils
 from ..daily_games import register_parser
+from ..daily_games import add_game_info
 
 ANGLE_ORIGIN_DATE = datetime.date(day=21, month=6, year=2022)
+game_name = "Angle"
+
+game_info = utils.GameInfo( game_name=game_name
+                            ,fail_score=5
+                            ,lower_score_is_better=True
+                            ,score_name="Number of guesses"
+                            ,url="https://angle.wtf/"
+                            ,description="Guess the angle"
+                            )
+
+add_game_info(game_name, game_info)
+
 
 
 
@@ -14,7 +27,7 @@ pattern = re.compile(
 )
 
 
-@register_parser("Angle", r"#Angle")
+@register_parser(game_name, r"#Angle")
 def angle_parser(message: discord.Message):
 
     text = message.content

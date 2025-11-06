@@ -9,7 +9,6 @@ from .. import database
 import datetime
 
 
-
 class RegisteredChannels(database.Base):
     __tablename__ = "registered_channels"
     channel_id: Mapped[int] = mapped_column(primary_key=True)

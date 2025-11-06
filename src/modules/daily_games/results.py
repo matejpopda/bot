@@ -1,4 +1,3 @@
-
 import discord
 import datetime
 import discord
@@ -23,6 +22,7 @@ from .models import Scores
 
 import pandas as pd
 
+
 async def raw_game_user_data(game: str, user_id):
     async with database.AsyncSessionLocal.begin() as session:
         session: AsyncSession
@@ -39,7 +39,7 @@ async def raw_game_user_data(game: str, user_id):
                     "score": score.score,
                     "date": score.date_of_game,
                     "gamenumber": score.game_number,
-                    "user_id": score.user_id
+                    "user_id": score.user_id,
                 }
             )
         return result
@@ -48,25 +48,36 @@ async def raw_game_user_data(game: str, user_id):
 async def game_user_dataframe(game: str, user: discord.User):
     scores = await raw_game_user_data(game, user.id)
     data = pd.DataFrame(scores)
-    data = data.rename(columns={"score":"Score", "user_id":"User", "date":"Date", "gamenumber":"Game Number"})
+    data = data.rename(
+        columns={
+            "score": "Score",
+            "user_id": "User",
+            "date": "Date",
+            "gamenumber": "Game Number",
+        }
+    )
     data = data.replace(user.id, user.name)
     return data
 
 
-user_graph_types = ["Histogram",
-                    "Kernel Density Estimate",             
-                    "Empirical Cumulative Distribution Function",
-                    "Scatter plot",
-                    "Line plot",
-                    "Linear regression"
-                    ]
-async def generate_user_graph(game: str, user: discord.User, graph_type:str, dates_instead_of_numbers:bool):
+user_graph_types = [
+    "Histogram",
+    "Kernel Density Estimate",
+    "Empirical Cumulative Distribution Function",
+    "Scatter plot",
+    "Line plot",
+    "Linear regression",
+]
+
+
+async def generate_user_graph(
+    game: str, user: discord.User, graph_type: str, dates_instead_of_numbers: bool
+):
     data = await game_user_dataframe(game, user)
 
-
     if dates_instead_of_numbers:
-        date_or_number= "Date"
-    else: 
+        date_or_number = "Date"
+    else:
         date_or_number = "Game Number"
 
     match graph_type:
@@ -77,45 +88,43 @@ async def generate_user_graph(game: str, user: discord.User, graph_type:str, dat
         case "Empirical Cumulative Distribution Function":
             g = sns.displot(data, x="Score", kind="ecdf", aspect=1.5)
         case "Scatter plot":
-            g = sns.relplot(data, y="Score", x = date_or_number, kind="scatter" ,aspect=1.5)
+            g = sns.relplot(
+                data, y="Score", x=date_or_number, kind="scatter", aspect=1.5
+            )
         case "Line plot":
-            g = sns.relplot(data, y="Score", x = date_or_number , kind="line", aspect=1.5)
+            g = sns.relplot(data, y="Score", x=date_or_number, kind="line", aspect=1.5)
         case "Linear regression":
-            g = sns.lmplot(data, y="Score", x = date_or_number ,aspect=1.5)
+            g = sns.lmplot(data, y="Score", x=date_or_number, aspect=1.5)
         case _:
             raise ValueError("Unknown graph type")
-        
-    g.figure.subplots_adjust(top=.92)
-    g.figure.suptitle(f'{graph_type} graph of {game} scores for {user.name}')
-    
+
+    g.figure.subplots_adjust(top=0.92)
+    g.figure.suptitle(f"{graph_type} graph of {game} scores for {user.name}")
+
     buf = io.BytesIO()
     g.savefig(buf, format="png", dpi=200)
     buf.seek(0)
     file = discord.File(buf, filename="user_graph.png")
     return file
 
-        
-
-
-
-
-
-
-
 
 type User = discord.SlashCommandOptionType.user
+
+
 async def generate_multiuser_graph(
     game: str,
     player_1: User,
     player_2: User | None,
     player_3: User | None,
     player_4: User | None,
-    dates_instead_of_numbers: bool= False,
-    scatter_instead_of_line:bool = False,
+    dates_instead_of_numbers: bool = False,
+    scatter_instead_of_line: bool = False,
 ):
 
     data = []
-    players = set([x for x in (player_1, player_2, player_3, player_4) if x is not None])
+    players = set(
+        [x for x in (player_1, player_2, player_3, player_4) if x is not None]
+    )
 
     for index, player in enumerate(players.copy()):
 
@@ -130,12 +139,10 @@ async def generate_multiuser_graph(
 
         data.append(player_data)
 
-
     if len(data) == 0:
         raise ValueError("Trying to generate graph from no data")
 
     data = pd.concat(data, ignore_index=True)
-
 
     if dates_instead_of_numbers:
         x = "Date"
@@ -149,11 +156,21 @@ async def generate_multiuser_graph(
         kind = "line"
         markers = ["o" for x in players]
 
-    g = sns.relplot(data, y="Score", x=x, style="User", hue="User", kind=kind, facet_kws={"legend_out":False}, aspect=1.5, markers=markers, dashes=False)
+    g = sns.relplot(
+        data,
+        y="Score",
+        x=x,
+        style="User",
+        hue="User",
+        kind=kind,
+        facet_kws={"legend_out": False},
+        aspect=1.5,
+        markers=markers,
+        dashes=False,
+    )
 
-        
-    g.figure.subplots_adjust(top=.92)
-    g.figure.suptitle(f'Game scores for {game}')
+    g.figure.subplots_adjust(top=0.92)
+    g.figure.suptitle(f"Game scores for {game}")
 
     buf = io.BytesIO()
     g.savefig(buf, format="png", dpi=200)

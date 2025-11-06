@@ -3,8 +3,23 @@ import discord
 import re
 from .. import utils
 from ..daily_games import register_parser
+from ..daily_games import add_game_info
 
 REVEALED_ORIGIN_DATE = datetime.date(day=6, month=10, year=2025)
+game_name = "Revealed"
+
+
+game_info = utils.GameInfo(
+    game_name=game_name,
+    fail_score=12,
+    lower_score_is_better=True,
+    score_name="Clues used",
+    url="https://www.britannica.com/games/revealed",
+    description="Guess the subject by revealing clues.",
+)
+
+add_game_info(game_name, game_info)
+
 
 pattern = re.compile(
     r"(?m)^REVEALED:\s*(?P<date_str>[A-Za-z]+ \d{1,2}, \d{4})\s*.*?"
@@ -14,11 +29,9 @@ pattern = re.compile(
 )
 
 
-@register_parser("Revealed", r"REVEALED: ")
+@register_parser(game_name, r"REVEALED: ")
 def revealed_parser(message: discord.Message):
     text = message.content
-
-
 
     data = pattern.search(text)
     if data is None:

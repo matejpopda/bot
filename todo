@@ -1,10 +1,10 @@
-Priority 1 (Active)
+# Priority 1 (Active)
 Game statistics
 - leaderboard (who had the better score more often, best score of all time)
 - leader
-Figure out how to occasionaly post a game link
 
-Priority 2 (Concrete ideas)
+
+# Priority 2 (Concrete ideas)
 Catch errors that can be emitted by the external APIs 
 Implement a command to use https://soruly.github.io/trace.moe-api/#/
 Either include memepy or write my own thing
@@ -15,18 +15,28 @@ Reminders
 Utility function to create utc time with discord formats 
 
 
-Priority 3 (Vague ideas)
-Economy
+
+## Economy
+- Cat tokens
+- 1 daily command to get some tokens
+- Playing a daily game awards some tokens too
+- Gamble commands?
+- stocks (price synced to the real thing)
+### Spendable on:
+- 
+
+
+# Priority 3 (Vague ideas)
 Message count stats
 ARG
 
-Priority 4 (Polish)
+# Priority 4 (Polish)
 Add an on edit hook for ingesting game scores, using on_raw_message_edit
 
 
-Priority 5 (Known ignored issues)
+# Priority 5 (Known ignored issues)
 In gamestatistics.py, when registering the parser its not possible to have 2 games share the same regex because of dictionary. Should be fixed by swapping the datastructure. (Currently just avoiding the collisions by slightly modifying the regex) 
 
 
 Issues: 
-Pips game number is different for some users. Most likely based on their locale and such. Very likely to distinguish manually
+Pips game number is different for some users. Most likely based on their locale and such. Very likely necessary to manually fix for every user

@@ -3,10 +3,22 @@ import discord
 import re
 from .. import utils
 from ..daily_games import register_parser
+from ..daily_games import add_game_info
 
 REUNION_ORIGIN_DATE = datetime.date(day=8, month=10, year=2025)
+game_name = "Reunion"
 
 
+game_info = utils.GameInfo(
+    game_name=game_name,
+    fail_score=None,
+    lower_score_is_better=True,
+    score_name="Number of moves",
+    url="www.merriam-webster.com/games/reunion",
+    description="Solve a crossword by permuting letters.",
+)
+
+add_game_info(game_name, game_info)
 
 
 pattern = re.compile(
@@ -15,8 +27,7 @@ pattern = re.compile(
 )
 
 
-
-@register_parser("Reunion", r"REUNION ")
+@register_parser(game_name, r"REUNION ")
 def reunion_parser(message: discord.Message):
 
     text = message.content
