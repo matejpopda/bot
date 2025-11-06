@@ -18,7 +18,7 @@ import discord
 import re
 
 from .models import Scores
-
+from . import daily_games
 
 import pandas as pd
 
@@ -98,8 +98,12 @@ async def generate_user_graph(
         case _:
             raise ValueError("Unknown graph type")
 
-    g.figure.subplots_adjust(top=0.92)
-    g.figure.suptitle(f"{graph_type} graph of {game} scores for {user.name}")
+    # g.figure.subplots_adjust(top=0.92)
+    # g.figure.suptitle(f"{graph_type} graph of {game} scores for {user.name}")
+
+    game_info = daily_games.get_game_info(game)
+    g.ax.set(ylabel=game_info.score_name, title=f"{graph_type} graph of {game} scores for {user.name}")
+    
 
     buf = io.BytesIO()
     g.savefig(buf, format="png", dpi=200)
@@ -169,8 +173,8 @@ async def generate_multiuser_graph(
         dashes=False,
     )
 
-    g.figure.subplots_adjust(top=0.92)
-    g.figure.suptitle(f"Game scores for {game}")
+    game_info = daily_games.get_game_info(game)
+    g.ax.set(ylabel=game_info.score_name, title=f"Graph of {game} scores")
 
     buf = io.BytesIO()
     g.savefig(buf, format="png", dpi=200)

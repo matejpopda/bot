@@ -5,7 +5,7 @@ from typing import Callable
 import discord
 import datetime
 import logging
-import utils
+
 
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy
@@ -16,6 +16,7 @@ import discord
 import re
 
 from .models import RegisteredChannels, Scores
+from . import utils
 
 
 logger = logging.getLogger()
@@ -96,7 +97,6 @@ def add_game_info(game_name: str, info: utils.GameInfo):
 
 def get_game_info(game_name: str):
     return game_info[game_name]
-
 
 async def register_channel(ctx: discord.ApplicationContext):
     # sqlalchemy.exc.IntegrityError

@@ -3,6 +3,7 @@ from discord.ext import commands
 from ..modules import daily_games
 import io
 import asyncio
+from ..modules import formatting
 
 import sqlalchemy.exc
 
@@ -174,6 +175,27 @@ class GameStatistics(commands.Cog):
         await ctx.response.send_message(
             content=f"Here are {user.display_name} scores for {game}", ephemeral=ephemeral, file=file
         )
+
+
+
+
+
+
+    @command_group.command(description="Get information about a game.")
+    @discord.option(
+        "game",
+        type=str,
+        choices=daily_games.available_games,
+        description="What game",
+    )
+    @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
+    async def game_info(self, ctx: discord.ApplicationContext, game, ephemeral):
+
+        info = daily_games.get_game_info(game)
+        embed = formatting.print_game_info(info)
+        await ctx.respond( embed=embed, ephemeral=ephemeral)
+
+
 
 
     @command_group.command(
