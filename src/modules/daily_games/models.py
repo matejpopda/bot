@@ -14,6 +14,7 @@ class RegisteredChannels(database.Base):
     channel_id: Mapped[int] = mapped_column(primary_key=True)
     who_registered_user_id: Mapped[int]
     timestamp_of_registration: Mapped[datetime.datetime]
+    guild_id: Mapped[int]
 
 
 class Scores(database.Base):

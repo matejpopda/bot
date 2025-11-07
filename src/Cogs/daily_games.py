@@ -3,7 +3,9 @@ from discord.ext import commands
 from ..modules import daily_games
 import io
 import asyncio
-from ..modules import formatting
+from ..modules import response_utils
+from discord.ext import pages
+from ..modules.daily_games.help import get_help_paginator
 
 import sqlalchemy.exc
 
@@ -12,16 +14,27 @@ class GameStatistics(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    command_group = discord.SlashCommandGroup(
+    dailies_command_group = discord.SlashCommandGroup(
         "dailies", "Statistics from daily games"
     )
 
-    @command_group.command(description="Information about using the gamestats commands")
-    async def help(self, ctx: discord.ApplicationContext):
 
-        await ctx.respond()
+    setup_perms = discord.Permissions()
+    setup_perms.manage_channels = True
+    dailies_setup_command_group = discord.SlashCommandGroup(
+        "dailies-debug", "Statistics from daily games", default_member_permissions = setup_perms
+    )
 
-    @command_group.command(
+
+
+    @dailies_command_group.command(description="Information about using the gamestats commands")
+    @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
+    async def help(self, ctx: discord.ApplicationContext, ephemeral=True):
+        paginator: pages.Paginator = get_help_paginator()
+        await paginator.respond(ctx.interaction, ephemeral=ephemeral)
+
+
+    @dailies_command_group.command(
         description="Post a graph with game scores. Make sure you ingested them first, see /gamestats help."
     )
     @discord.option(
@@ -83,11 +96,10 @@ class GameStatistics(commands.Cog):
             )
             await ctx.response.send_message(file=file)
         except ValueError as e: 
-            await ctx.response.send_message("No scores found for selected users. They most likely weren't ingested.", ephemeral=True)
+            await response_utils.send_error_response("No scores found for selected users. They most likely weren't ingested.")
 
 
-
-    @command_group.command(
+    @dailies_command_group.command(
         description="Post a users graph with game scores. Make sure you ingested them first, see /gamestats help."
     )
     @discord.option(
@@ -130,10 +142,11 @@ class GameStatistics(commands.Cog):
             )
             await ctx.response.send_message(file=file)
         except ValueError as e: 
-            await ctx.response.send_message("No scores found for selected users. They most likely weren't ingested.", ephemeral=True)
+            
+            await response_utils.send_error_response("No scores found for selected user. They most likely weren't ingested.")
 
 
-    @command_group.command(description="Returns users scores in a game.")
+    @dailies_command_group.command(description="Returns users scores in a game.")
     @discord.option(
         "game",
         type=str,
@@ -155,6 +168,9 @@ class GameStatistics(commands.Cog):
             user = ctx.user
 
         scores = await daily_games.raw_game_user_data(game, user.id)
+
+        if len(scores) == 0:
+            await response_utils.send_error_response(ctx, f"User {user.name} has no saved scores for {game}")
 
         if format == "csv":
             output.write("date, game_number, score\n")
@@ -181,7 +197,7 @@ class GameStatistics(commands.Cog):
 
 
 
-    @command_group.command(description="Get information about a game.")
+    @dailies_command_group.command(description="Get information about a game.")
     @discord.option(
         "game",
         type=str,
@@ -192,61 +208,101 @@ class GameStatistics(commands.Cog):
     async def game_info(self, ctx: discord.ApplicationContext, game, ephemeral):
 
         info = daily_games.get_game_info(game)
-        embed = formatting.print_game_info(info)
+        embed = response_utils.format_game_info_into_embed(info)
         await ctx.respond( embed=embed, ephemeral=ephemeral)
 
 
-
-
-    @command_group.command(
-        description="Goes through all the messages in the channel and saves them"
+    @dailies_setup_command_group.command(
+        description="Ingest or forget scores in channels. "
     )
+    @discord.option(
+        "options",
+        type=str,
+        choices=["Ingest", "Reingest", "Forget"],
+        description="What operation to do",
+    )
+    async def channel_ingestion(self, ctx: discord.ApplicationContext, options):
+        match options:
+            case "Ingest": 
+                self.ingest_channel_history(ctx)
+            case "Reingest":
+                self.reingest_channel_history(ctx)
+            case "Forget":
+                self.forget_channel_history(ctx)
+            case _ :
+                await response_utils.send_error_response("Unknown options argument")
+
     async def ingest_channel_history(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
         await daily_games.ingest_games_in_channel(ctx)
-        await ctx.followup.send(content="Ingested", ephemeral=True)
+        await response_utils.send_success_webhook(ctx.followup, "Ingested this channel.")
 
-    @command_group.command(
-        description="Deletes all data from a channel and then ingests them again."
-    )
+
     async def reingest_channel_history(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
         await daily_games.reingest_games_in_channel(ctx)
-        await ctx.followup.send(content="Ingested", ephemeral=True)
+        await response_utils.send_success_webhook(ctx.followup, "Reingested this channel.")
 
 
-    @command_group.command(
-        description="Registers channel, so it automatically saves the scores."
+    async def forget_channel_history(self, ctx: discord.ApplicationContext):
+        await ctx.defer(ephemeral=True)
+        await daily_games.release_games_in_channel(ctx)
+        await response_utils.send_success_webhook(ctx.followup, "Forgotten scores in this channel.")
+
+
+
+    @dailies_setup_command_group.command(
+        description="Register and unregister channels."
     )
-    async def register_channel(self, ctx: discord.ApplicationContext):
-            
+    @discord.option(
+        "options",
+        type=str,
+        choices=["Register channel", "Unregister channel", "Print registered channels"],
+        description="What operation to do in the current channel",
+    )
+    async def channel_registration(self, ctx: discord.ApplicationContext, options):
+        match options:
+            case "Register channel":
+                await self.register_channel(ctx)
+            case "Unregister channel":
+                await self.unregister_channel(ctx)
+            case "Print registered channels":
+                await self.print_registered_channels(ctx)
+            case _ :
+                await response_utils.send_error_response("Unknown options argument")
+
+    async def register_channel(self, ctx: discord.ApplicationContext):       
         try:
             await daily_games.register_channel(ctx)
-            await ctx.response.send_message(
-                content="Succesfully registered", ephemeral=True
-            )
+            await response_utils.send_success_response("Succesfully registered")
 
         except sqlalchemy.exc.IntegrityError as e:
-            await ctx.response.send_message(
-                content="Failed to register. Channel already in database.", ephemeral=True
-            )
+            await response_utils.send_error_response("Failed to register. Channel already in database.", "Registration Error")
 
-
-    @command_group.command(
-        description="Unregisters channel, so it no longer automatically saves the scores"
-    )
     async def unregister_channel(self, ctx: discord.ApplicationContext):
-
         try:
             await daily_games.unregister_channel(ctx)
+            await response_utils.send_success_response("Succesfully unregistered")
+        except sqlalchemy.exc.IntegrityError as e:
+            await response_utils.send_error_response("Failed to unregister. Channel is not registered.", "Registration Error")
+    
+    async def print_registered_channels(self, ctx: discord.ApplicationContext):
+        ids = await daily_games.get_registered_channel_ids(ctx)
+        result = ""
 
-            await ctx.response.send_message(
-                content="Succesfully unregistered", ephemeral=True
-            )
-        except sqlalchemy.exc.NoResultFound as e:
-            await ctx.response.send_message(
-                content="Failed to unregister. Channel was not registered.", ephemeral=True
-            )
+        if ctx.guild is None:
+            await response_utils.send_error_response("Not in a guild.")
+
+        for id in ids:
+            guild: discord.Guild = ctx.guild
+            channel = guild.get_channel_or_thread(id)
+
+            if channel is None:
+                continue
+
+            result += f" {channel.name} \n"
+
+        await response_utils.send_success_response(result, "Following channels/threads are registered.")
 
 
     @commands.Cog.listener()

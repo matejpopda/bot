@@ -105,7 +105,7 @@ async def register_channel(ctx: discord.ApplicationContext):
         channel.channel_id = ctx.channel_id
         channel.timestamp_of_registration = discord.utils.utcnow()
         channel.who_registered_user_id = ctx.author.id
-
+        channel.guild_id = ctx.guild_id
         session.add(channel)
     return
 
@@ -116,12 +116,28 @@ async def unregister_channel(ctx: discord.ApplicationContext):
         channel = await session.get_one(RegisteredChannels, ctx.channel.id)
         await session.delete(channel)
 
+async def get_registered_channel_ids(ctx: discord.ApplicationContext):
+    async with database.AsyncSessionLocal.begin() as session:
+        session: AsyncSession
+        result = []
+        query = await session.execute(
+            sqlalchemy.select(RegisteredChannels)
+            .where(RegisteredChannels.guild_id == ctx.guild_id)
+        )
+        for channel in query.scalars():
+            result.append(channel.channel_id)
+
+        return result
+
+
+
 
 async def in_registered_channel(message: discord.Message):
     async with database.AsyncSessionLocal.begin() as session:
         session: AsyncSession
         result = await session.get(RegisteredChannels, message.channel.id)
         return result is not None
+    
 
 
 async def send_score_to_database(

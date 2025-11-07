@@ -14,7 +14,7 @@ import src.Cogs.fun as fun
 
 import src.modules.database 
 import src.modules.logging
-import  src.modules.formatting  
+import src.modules.response_utils  
 
 integration_types = set(
     [discord.IntegrationType.guild_install, discord.IntegrationType.user_install]
@@ -29,7 +29,7 @@ console_logger = logging.getLogger("console")
 async def main():
     src.modules.logging.setup_all_logging()
     
-    src.modules.formatting.set_default_graph_formatting()
+    src.modules.response_utils.set_default_graph_formatting()
 
     config = dotenv.dotenv_values()
     bot = commands.Bot(
