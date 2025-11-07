@@ -11,6 +11,7 @@ Black
 # Database 
 SQLAlchemy
 aiosqlite
+alembic
 
 # Dice rolling library for TTRPG
 dyce

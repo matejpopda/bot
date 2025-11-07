@@ -23,6 +23,7 @@ class Scores(database.Base):
     score: Mapped[float]
     user_id: Mapped[int]
     channel_id: Mapped[int]
+    guild_id: Mapped[int]
     game: Mapped[str] = mapped_column(primary_key=True)
     date_of_game: Mapped[datetime.date]
     game_number: Mapped[int]

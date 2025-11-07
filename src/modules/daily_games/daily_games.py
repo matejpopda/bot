@@ -126,7 +126,7 @@ async def register_channel(ctx: discord.ApplicationContext):
 
 
 async def unregister_channel(ctx: discord.ApplicationContext):
-    logger.info(f"Unregistering channel {channel.id} - name: {channel.name}.")
+    logger.info(f"Unregistering channel {ctx.channel.id} - name: {ctx.channel.name}.")
 
     # sqlalchemy.exc.NoResultFound
     async with database.AsyncSessionLocal.begin() as session:
@@ -172,6 +172,7 @@ async def send_score_to_database(
             message_id=message.id,
             user_id=message.author.id,
             timestamp=message.created_at,
+            guild_id=message.guild.id,
             score=gamescore,
             date_of_game=gamedate,
             game_number=gamenumber,
