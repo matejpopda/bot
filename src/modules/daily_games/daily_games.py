@@ -79,6 +79,13 @@ async def ingest_games_in_channel(ctx: discord.ApplicationContext, limit=None):
             pass
 
 
+async def on_message_edit(message: discord.Message):
+    async with database.AsyncSessionLocal.begin() as session:
+        saved_score_query = sqlalchemy.delete(Scores).where(Scores.message_id == message.id)
+        await session.execute(saved_score_query)
+    await ingest_message(message)
+
+
 
 async def release_games_in_channel(ctx: discord.ApplicationContext):
     logger.info(f"Releasing messages in {ctx.channel.id} - name: {ctx.channel.name}.")

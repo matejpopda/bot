@@ -30,7 +30,6 @@ Message count stats
 ARG
 
 # Priority 4 (Polish)
-Add an on edit hook for ingesting game scores, using on_raw_message_edit
 
 
 # Priority 5 (Known ignored issues)

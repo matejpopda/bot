@@ -28,7 +28,7 @@ class GameStatistics(commands.Cog):
 
 
 
-    @dailies_command_group.command(description="Information about using the gamestats commands")
+    @dailies_command_group.command(description="Information about using the dailies commands")
     @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
     async def help(self, ctx: discord.ApplicationContext, ephemeral=True):
         paginator: pages.Paginator = get_help_paginator()
@@ -36,7 +36,7 @@ class GameStatistics(commands.Cog):
 
 
     @dailies_command_group.command(
-        description="Post a graph with game scores. Make sure you ingested them first, see /gamestats help."
+        description="Post a graph with game scores. Make sure you ingested them first, see /dailies help."
     )
     @discord.option(
         "game",
@@ -101,7 +101,7 @@ class GameStatistics(commands.Cog):
 
 
     @dailies_command_group.command(
-        description="Post a users graph with game scores. Make sure you ingested them first, see /gamestats help."
+        description="Post a users graph with game scores. Make sure you ingested them first, see /dailies help."
     )
     @discord.option(
         "game",
@@ -322,3 +322,37 @@ class GameStatistics(commands.Cog):
         if fixed_link is not None:
             await message.channel.send(f"<{fixed_link}>")
 
+
+
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+
+        if message.author == self.bot.user:
+            return
+
+        if not await daily_games.in_registered_channel(message):
+            return
+
+        await daily_games.ingest_message(message)
+
+        fixed_link = await daily_games.get_a_fixed_link(message)
+        if fixed_link is not None:
+            await message.channel.send(f"<{fixed_link}>")
+
+
+
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, message_before: discord.Message, message_after: discord.Message):
+
+            if message_after.author == self.bot.user:
+                return
+
+            if not await daily_games.in_registered_channel(message_after):
+                return
+            
+            await daily_games.on_message_edit(message_after)
+
+            
+            
