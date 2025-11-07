@@ -98,8 +98,6 @@ async def generate_user_graph(
         case _:
             raise ValueError("Unknown graph type")
 
-    # g.figure.subplots_adjust(top=0.92)
-    # g.figure.suptitle(f"{graph_type} graph of {game} scores for {user.name}")
 
     game_info = daily_games.get_game_info(game)
     g.ax.set(ylabel=game_info.score_name, title=f"{graph_type} graph of {game} scores for {user.name}")

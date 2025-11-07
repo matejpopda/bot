@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import discord.utils
 from ..modules import daily_games
 import io
 import asyncio
@@ -40,7 +41,7 @@ class GameStatistics(commands.Cog):
     @discord.option(
         "game",
         type=str,
-        choices=daily_games.available_games,
+        autocomplete=discord.utils.basic_autocomplete(daily_games.available_games),
         description="What game",
     )
     @discord.option(
@@ -105,7 +106,7 @@ class GameStatistics(commands.Cog):
     @discord.option(
         "game",
         type=str,required=True,
-        choices=daily_games.available_games,
+        autocomplete=discord.utils.basic_autocomplete(daily_games.available_games),
         description="What game",
     )
 
@@ -150,7 +151,7 @@ class GameStatistics(commands.Cog):
     @discord.option(
         "game",
         type=str,
-        choices=daily_games.available_games,
+        autocomplete=discord.utils.basic_autocomplete(daily_games.available_games),
         description="What game",
     )
     @discord.option(
@@ -171,6 +172,7 @@ class GameStatistics(commands.Cog):
 
         if len(scores) == 0:
             await response_utils.send_error_response(ctx, f"User {user.name} has no saved scores for {game}")
+            return
 
         if format == "csv":
             output.write("date, game_number, score\n")
@@ -201,7 +203,7 @@ class GameStatistics(commands.Cog):
     @discord.option(
         "game",
         type=str,
-        choices=daily_games.available_games,
+        autocomplete=discord.utils.basic_autocomplete(daily_games.available_games),
         description="What game",
     )
     @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")

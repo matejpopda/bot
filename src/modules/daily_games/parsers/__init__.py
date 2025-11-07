@@ -21,4 +21,8 @@ from . import (
     videopuzzle,
     wikigamedaily,
     wordle,
+    framed,
+    scrandle,
+    betweenle,
+    decodex
 )
