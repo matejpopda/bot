@@ -97,7 +97,7 @@ class GameStatistics(commands.Cog):
             )
             await ctx.response.send_message(file=file)
         except ValueError as e: 
-            await response_utils.send_error_response("No scores found for selected users. They most likely weren't ingested.")
+            await response_utils.send_error_response(ctx, "No scores found for selected users. They most likely weren't ingested.")
 
 
     @dailies_command_group.command(
@@ -144,7 +144,7 @@ class GameStatistics(commands.Cog):
             await ctx.response.send_message(file=file)
         except ValueError as e: 
             
-            await response_utils.send_error_response("No scores found for selected user. They most likely weren't ingested.")
+            await response_utils.send_error_response(ctx, "No scores found for selected user. They most likely weren't ingested.")
 
 
     @dailies_command_group.command(description="Returns users scores in a game.")
@@ -232,7 +232,7 @@ class GameStatistics(commands.Cog):
             case "Forget":
                 await self.forget_channel_history(ctx)
             case _ :
-                await response_utils.send_error_response("Unknown options argument")
+                await response_utils.send_error_response(ctx, "Unknown options argument")
 
     async def ingest_channel_history(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
@@ -271,29 +271,29 @@ class GameStatistics(commands.Cog):
             case "Print registered channels":
                 await self.print_registered_channels(ctx)
             case _ :
-                await response_utils.send_error_response("Unknown options argument")
+                await response_utils.send_error_response(ctx, "Unknown options argument")
 
     async def register_channel(self, ctx: discord.ApplicationContext):       
         try:
             await daily_games.register_channel(ctx)
-            await response_utils.send_success_response("Succesfully registered")
+            await response_utils.send_success_response(ctx, "Succesfully registered")
 
         except sqlalchemy.exc.IntegrityError as e:
-            await response_utils.send_error_response("Failed to register. Channel already in database.", "Registration Error")
+            await response_utils.send_error_response(ctx, "Failed to register. Channel already in database.", "Registration Error")
 
     async def unregister_channel(self, ctx: discord.ApplicationContext):
         try:
             await daily_games.unregister_channel(ctx)
-            await response_utils.send_success_response("Succesfully unregistered")
+            await response_utils.send_success_response(ctx, "Succesfully unregistered")
         except sqlalchemy.exc.IntegrityError as e:
-            await response_utils.send_error_response("Failed to unregister. Channel is not registered.", "Registration Error")
+            await response_utils.send_error_response(ctx, "Failed to unregister. Channel is not registered.", "Registration Error")
     
     async def print_registered_channels(self, ctx: discord.ApplicationContext):
         ids = await daily_games.get_registered_channel_ids(ctx)
         result = ""
 
         if ctx.guild is None:
-            await response_utils.send_error_response("Not in a guild.")
+            await response_utils.send_error_response(ctx, "Not in a guild.")
 
         for id in ids:
             guild: discord.Guild = ctx.guild
@@ -304,7 +304,7 @@ class GameStatistics(commands.Cog):
 
             result += f" {channel.name} \n"
 
-        await response_utils.send_success_response(result, "Following channels/threads are registered.")
+        await response_utils.send_success_response(ctx, result, "Following channels/threads are registered.")
 
 
     @commands.Cog.listener()

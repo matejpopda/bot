@@ -106,7 +106,7 @@ def get_game_info(game_name: str):
     return game_info[game_name]
 
 async def register_channel(ctx: discord.ApplicationContext):
-    logger.info(f"Registering channel {channel.id} - name: {channel.name}.")
+    logger.info(f"Registering channel {ctx.channel.id} - name: {ctx.channel.name}.")
     # sqlalchemy.exc.IntegrityError
     async with database.AsyncSessionLocal.begin() as session:
         channel = RegisteredChannels()

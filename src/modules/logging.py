@@ -24,11 +24,13 @@ def setup_database_logging():
     logfilepath = Path('logs/sql.log')
 
     logfilepath.parent.mkdir(exist_ok=True)
+    handler = get_rotating_file_handler(logfilepath)
 
     logger = logging.getLogger('sqlalchemy')
+    logger.setLevel(logging.INFO)
+
     logger.propagate = False
 
-    handler = get_rotating_file_handler(logfilepath)
     logger.addHandler(handler)
 
     logger = logging.getLogger("aiosqlite")
