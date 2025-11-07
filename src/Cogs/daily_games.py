@@ -23,7 +23,7 @@ class GameStatistics(commands.Cog):
     setup_perms = discord.Permissions()
     setup_perms.manage_channels = True
     dailies_setup_command_group = discord.SlashCommandGroup(
-        "dailies-debug", "Statistics from daily games", default_member_permissions = setup_perms
+        "dailies-debug", "Setup for the daily games module", default_member_permissions = setup_perms
     )
 
 

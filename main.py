@@ -33,7 +33,7 @@ async def main():
     
     src.modules.response_utils.set_default_graph_formatting()
 
-    config = dotenv.dotenv_values()
+    config = dotenv.dotenv_values("config_files/.env")
     bot = commands.Bot(
         default_command_integration_types=integration_types, 
         intents=intents
