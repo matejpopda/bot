@@ -26,7 +26,6 @@ def setup_database_logging():
     logfilepath.parent.mkdir(exist_ok=True)
 
     logger = logging.getLogger('sqlalchemy')
-    logger.setLevel(logging.DEBUG)
     logger.propagate = False
 
     handler = get_rotating_file_handler(logfilepath)
@@ -34,6 +33,8 @@ def setup_database_logging():
 
     logger = logging.getLogger("aiosqlite")
     logger.setLevel(logging.INFO)
+    logger.propagate = False
+    logger.addHandler(handler)
     
 
 def setup_discord_logging():
@@ -73,6 +74,20 @@ def setup_announcer_logging():
     
     logger.addHandler(get_console_handler())
 
+def setup_dailies_logging():
+    logfilepath = Path('logs/dailies.log')
+
+    logfilepath.parent.mkdir(exist_ok=True)
+
+    logger = logging.getLogger("dailies")
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
+
+    handler = get_rotating_file_handler(logfilepath)
+    logger.addHandler(handler)
+    
+
+
 def setup_ignoring_of_loggers():
     logging.getLogger("matplotlib.font_manager").propagate = False
     logging.getLogger("PIL.PngImagePlugin").propagate = False
@@ -85,5 +100,7 @@ def setup_all_logging():
     setup_discord_logging()
     setup_root_logging()
     setup_announcer_logging()
+    
+    setup_dailies_logging()
     setup_ignoring_of_loggers()
 

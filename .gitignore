@@ -1,6 +1,8 @@
 
 sqllite-database.db
 logs/
+pips_users_with_wrong_date.yaml
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

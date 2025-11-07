@@ -1,7 +1,4 @@
 # Priority 1 (Active)
-Game statistics
-- leaderboard (who had the better score more often, best score of all time)
-- leader
 
 
 # Priority 2 (Concrete ideas)
@@ -13,6 +10,8 @@ Mood tracker
 Reminders
 
 Utility function to create utc time with discord formats 
+
+Game statistics - 
 
 
 
@@ -39,4 +38,3 @@ In gamestatistics.py, when registering the parser its not possible to have 2 gam
 
 
 Issues: 
-Pips game number is different for some users. Most likely based on their locale and such. Very likely necessary to manually fix for every user

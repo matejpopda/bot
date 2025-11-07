@@ -58,5 +58,13 @@ help_page_groups.append(pages.PageGroup([info_page],title))
 def get_help_paginator():
 
 
-    paginator = pages.Paginator(pages=help_page_groups, show_menu=True, show_disabled=False, show_indicator=False)
+    paginator = pages.Paginator(pages=help_page_groups, show_menu=True, show_disabled=False, show_indicator=False,timeout=5)
+
+    original_on_timeout = paginator.on_timeout
+    async def on_timeout_overload():
+        await original_on_timeout()
+        await paginator.message.edit(view=None)
+
+    
+    paginator.on_timeout = on_timeout_overload
     return paginator

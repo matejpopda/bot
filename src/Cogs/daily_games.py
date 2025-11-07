@@ -224,11 +224,11 @@ class GameStatistics(commands.Cog):
     async def channel_ingestion(self, ctx: discord.ApplicationContext, options):
         match options:
             case "Ingest": 
-                self.ingest_channel_history(ctx)
+                await self.ingest_channel_history(ctx)
             case "Reingest":
-                self.reingest_channel_history(ctx)
+                await self.reingest_channel_history(ctx)
             case "Forget":
-                self.forget_channel_history(ctx)
+                await self.forget_channel_history(ctx)
             case _ :
                 await response_utils.send_error_response("Unknown options argument")
 

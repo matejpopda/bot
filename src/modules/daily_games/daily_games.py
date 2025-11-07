@@ -9,6 +9,7 @@ import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy
+import sqlalchemy.exc
 
 from .. import database
 import discord
@@ -19,8 +20,7 @@ from .models import RegisteredChannels, Scores
 from . import utils
 
 
-logger = logging.getLogger()
-
+logger = logging.getLogger("dailies")
 
 registered_parsers: dict[re.Pattern, tuple[Callable, str]] = {}
 available_games = []
@@ -69,13 +69,20 @@ async def ingest_message(message: discord.Message):
 
 async def ingest_games_in_channel(ctx: discord.ApplicationContext, limit=None):
     channel: discord.interactions.InteractionChannel = ctx.channel
+    logger.info(f"Ingesting messages in {channel.id} - name: {channel.name}.")
     async for msg in channel.history(limit=limit):
         if msg.author.bot == True:
             continue
-        await ingest_message(msg)
+        try:
+            await ingest_message(msg)
+        except sqlalchemy.exc.IntegrityError:
+            pass
+
 
 
 async def release_games_in_channel(ctx: discord.ApplicationContext):
+    logger.info(f"Releasing messages in {ctx.channel.id} - name: {ctx.channel.name}.")
+
     async with database.AsyncSessionLocal.begin() as session:
         channel: discord.interactions.InteractionChannel = ctx.channel
         await session.execute(
@@ -99,6 +106,7 @@ def get_game_info(game_name: str):
     return game_info[game_name]
 
 async def register_channel(ctx: discord.ApplicationContext):
+    logger.info(f"Registering channel {channel.id} - name: {channel.name}.")
     # sqlalchemy.exc.IntegrityError
     async with database.AsyncSessionLocal.begin() as session:
         channel = RegisteredChannels()
@@ -111,6 +119,8 @@ async def register_channel(ctx: discord.ApplicationContext):
 
 
 async def unregister_channel(ctx: discord.ApplicationContext):
+    logger.info(f"Unregistering channel {channel.id} - name: {channel.name}.")
+
     # sqlalchemy.exc.NoResultFound
     async with database.AsyncSessionLocal.begin() as session:
         channel = await session.get_one(RegisteredChannels, ctx.channel.id)
@@ -147,6 +157,7 @@ async def send_score_to_database(
     gamedate: datetime.date,
     gamenumber: int,
 ):
+    logger.info(f"Sending score to database. Message {message.id}, user: {message.author.name} - {message.author.id}, score: {gamescore}, game: {game_name}")
     async with database.AsyncSessionLocal.begin() as session:
         score = Scores(
             channel_id=message.channel.id,

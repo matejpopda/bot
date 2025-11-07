@@ -1,4 +1,8 @@
 import logging
+
+import src.modules.logging
+src.modules.logging.setup_all_logging()
+
 import asyncio
 
 import discord
@@ -13,7 +17,6 @@ import src.Cogs.fun as fun
 
 
 import src.modules.database 
-import src.modules.logging
 import src.modules.response_utils  
 
 integration_types = set(
@@ -27,7 +30,6 @@ console_logger = logging.getLogger("console")
 
 
 async def main():
-    src.modules.logging.setup_all_logging()
     
     src.modules.response_utils.set_default_graph_formatting()
 

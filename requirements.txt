@@ -24,3 +24,6 @@ requests
 
 # this library is needed when running python 3.13 or above
 audioop-lts; python_version>='3.13'
+
+# YAML files
+PyYAML

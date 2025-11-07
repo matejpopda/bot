@@ -4,6 +4,9 @@ import re
 from .. import utils
 from ..daily_games import register_parser
 from ..daily_games import add_game_info
+import yaml
+import pathlib
+import logging
 
 PIPS_ORIGIN_DATE = datetime.date(day=18, month=8, year=2025)
 easy_game_name = "Pips - Easy"
@@ -48,12 +51,28 @@ def pips_parser(message: discord.Message):
 
     game_number = int(result["number"])
 
+    if user_off_by_day_because_NYT_issue(message.author.id):
+        game_number -= 1
+
+
     date = utils.date_after_days_passed(PIPS_ORIGIN_DATE, game_number)
 
-    # edge case because some people have wrong numbering by 1 day
-
-    # if (date - message.created_at.date()).days == 1:
-    #     game_number -= 1
-    #     date = message.created_at.date()
 
     return float(score), date, int(game_number)
+
+
+def user_off_by_day_because_NYT_issue(id):
+    """
+    For some reason some users have their Pips numbering off by 1 day. Nothing we can really do about it.
+    I know only one person with this problem, so thats why its manually set in the yaml file.
+    """
+    path = pathlib.Path("config_files/dailies/pips_users_with_wrong_date.yaml")
+    if not path.exists():
+        logging.info("Didn't find file config_files/dailies/pips_users_with_wrong_date.yaml.")
+        return False
+    
+    with path.open("r") as f:
+        data = yaml.safe_load(f)
+
+    users = data["users"]
+    return id in users
