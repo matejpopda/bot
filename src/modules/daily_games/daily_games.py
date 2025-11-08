@@ -67,8 +67,12 @@ async def ingest_message(message: discord.Message):
         )
 
 
-async def ingest_games_in_channel(ctx: discord.ApplicationContext, limit=None):
+async def ingest_games_in_channel_from_context(ctx: discord.ApplicationContext, limit=None):
     channel: discord.interactions.InteractionChannel = ctx.channel
+    await ingest_games_in_channel(limit, channel)
+
+
+async def ingest_games_in_channel(channel:discord.TextChannel, limit):
     logger.info(f"Ingesting messages in {channel.id} - name: {channel.name}.")
     async for msg in channel.history(limit=limit):
         if msg.author.bot == True:
@@ -77,6 +81,7 @@ async def ingest_games_in_channel(ctx: discord.ApplicationContext, limit=None):
             await ingest_message(msg)
         except sqlalchemy.exc.IntegrityError:
             pass
+
 
 
 async def on_message_edit(message: discord.Message):
@@ -99,7 +104,7 @@ async def release_games_in_channel(ctx: discord.ApplicationContext):
 
 async def reingest_games_in_channel(ctx: discord.ApplicationContext):
     await release_games_in_channel(ctx)
-    await ingest_games_in_channel(ctx)
+    await ingest_games_in_channel_from_context(ctx)
 
 
 game_info: dict[str, utils.GameInfo] = {}
@@ -133,7 +138,7 @@ async def unregister_channel(ctx: discord.ApplicationContext):
         channel = await session.get_one(RegisteredChannels, ctx.channel.id)
         await session.delete(channel)
 
-async def get_registered_channel_ids(ctx: discord.ApplicationContext):
+async def get_registered_channel_ids_in_guild(ctx: discord.ApplicationContext):
     async with database.AsyncSessionLocal.begin() as session:
         session: AsyncSession
         result = []
@@ -146,6 +151,18 @@ async def get_registered_channel_ids(ctx: discord.ApplicationContext):
 
         return result
 
+
+async def get_all_registered_channel_ids():
+    async with database.AsyncSessionLocal.begin() as session:
+        session: AsyncSession
+        result = []
+        query = await session.execute(
+            sqlalchemy.select(RegisteredChannels)
+        )
+        for channel in query.scalars():
+            result.append(channel.channel_id)
+
+        return result
 
 
 
@@ -164,7 +181,6 @@ async def send_score_to_database(
     gamedate: datetime.date,
     gamenumber: int,
 ):
-    logger.info(f"Sending score to database. Message {message.id}, user: {message.author.name} - {message.author.id}, score: {gamescore}, game: {game_name}")
     async with database.AsyncSessionLocal.begin() as session:
         score = Scores(
             channel_id=message.channel.id,
@@ -178,6 +194,8 @@ async def send_score_to_database(
             game_number=gamenumber,
         )
         session.add(score)
+    logger.info(f"Sent score to database. Message {message.id}, user: {message.author.name} - {message.author.id}, score: {gamescore}, game: {game_name}")
+    
 
 
 link_association = [

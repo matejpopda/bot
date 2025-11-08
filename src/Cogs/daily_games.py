@@ -236,7 +236,7 @@ class GameStatistics(commands.Cog):
 
     async def ingest_channel_history(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
-        await daily_games.ingest_games_in_channel(ctx)
+        await daily_games.ingest_games_in_channel_from_context(ctx)
         await response_utils.send_success_webhook(ctx.followup, "Ingested this channel.")
 
 
@@ -289,7 +289,7 @@ class GameStatistics(commands.Cog):
             await response_utils.send_error_response(ctx, "Failed to unregister. Channel is not registered.", "Registration Error")
     
     async def print_registered_channels(self, ctx: discord.ApplicationContext):
-        ids = await daily_games.get_registered_channel_ids(ctx)
+        ids = await daily_games.get_registered_channel_ids_in_guild(ctx)
         result = ""
 
         if ctx.guild is None:
@@ -322,25 +322,13 @@ class GameStatistics(commands.Cog):
         if fixed_link is not None:
             await message.channel.send(f"<{fixed_link}>")
 
-
-
-
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_ready(self):
+        result = await daily_games.get_all_registered_channel_ids()
 
-        if message.author == self.bot.user:
-            return
-
-        if not await daily_games.in_registered_channel(message):
-            return
-
-        await daily_games.ingest_message(message)
-
-        fixed_link = await daily_games.get_a_fixed_link(message)
-        if fixed_link is not None:
-            await message.channel.send(f"<{fixed_link}>")
-
-
+        for channel_id in result:
+            channel = self.bot.get_channel(channel_id)
+            await daily_games.ingest_games_in_channel(channel=channel, limit=80)
 
 
     @commands.Cog.listener()
