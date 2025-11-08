@@ -6,6 +6,7 @@ import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy
+import sqlalchemy.orm
 
 from .. import database
 
@@ -27,11 +28,29 @@ async def raw_game_user_data(game: str, user_id):
     async with database.AsyncSessionLocal.begin() as session:
         session: AsyncSession
         result = []
+
+        subq = (
+            sqlalchemy.select(
+                Scores.game_number,
+                sqlalchemy.func.max(Scores.timestamp).label("latest_ts")
+            )
+            .where(Scores.user_id == user_id, Scores.game == game)
+            .group_by(Scores.game_number)
+            .subquery()
+        )
+
+        latest_scores = sqlalchemy.orm.aliased(Scores)
+
         query = await session.execute(
-            sqlalchemy.select(Scores)
-            .where(Scores.user_id == user_id)
-            .where(Scores.game == game)
-            .order_by(Scores.date_of_game.asc())
+            sqlalchemy.select(latest_scores)
+            .join(
+                subq,
+                (latest_scores.game_number == subq.c.game_number)
+                & (latest_scores.timestamp == subq.c.latest_ts)
+            )
+            .where(latest_scores.user_id == user_id)
+            .where(latest_scores.game == game)
+            .order_by(latest_scores.date_of_game.asc())
         )
         for score in query.scalars():
             result.append(
