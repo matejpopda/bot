@@ -6,7 +6,7 @@ from ..daily_games import register_parser
 from ..daily_games import add_game_info
 
 
-VIDEOPUZZLE_ORIGIN_DATE = datetime.date(day=8, month=11, year=2024)
+VIDEOPUZZLE_ORIGIN_DATE = datetime.date(day=9, month=11, year=2024)
 game_name = "VideoPuzzle"
 
 game_info = utils.GameInfo(

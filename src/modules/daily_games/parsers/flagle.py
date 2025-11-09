@@ -5,7 +5,7 @@ from .. import utils
 from ..daily_games import register_parser
 from ..daily_games import add_game_info
 
-FLAGLE_ORIGIN_DATE = datetime.date(day=14, month=3, year=2022)
+FLAGLE_ORIGIN_DATE = datetime.date(day=15, month=3, year=2022)
 game_name = "Flagle"
 
 
