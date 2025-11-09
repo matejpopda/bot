@@ -28,3 +28,6 @@ audioop-lts; python_version>='3.13'
 
 # YAML files
 PyYAML
+
+# Output formatting
+prettytable

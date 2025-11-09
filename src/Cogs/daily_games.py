@@ -196,6 +196,33 @@ class GameStatistics(commands.Cog):
 
 
 
+    @dailies_command_group.command(description="Shows which recently played games you forgot about today.")
+    @discord.option(
+        "user",
+        type=discord.SlashCommandOptionType.user,
+        description="User, defauls to you.",
+        required=False
+    )  
+    @discord.option("verbose", type=bool, default=False, description="More details")
+    @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
+    async def most_recent_games(self, ctx: discord.ApplicationContext, user, verbose, ephemeral):
+
+        if user is None:
+            user = ctx.user
+
+        lookback = 21 if verbose else 3
+
+        scores = await daily_games.get_recently_played_games_for_user(user, lookback)
+
+        if len(scores) == 0:
+            await response_utils.send_error_response(ctx, f"User {user.name} has no recently saved scores.")
+            return
+        
+        embed = response_utils.latest_games_into_a_table(input_list=scores, username=user.name, verbose=verbose)
+
+        await ctx.response.send_message(
+            content=None, ephemeral=ephemeral, embed=embed
+        )
 
 
 
@@ -318,6 +345,7 @@ class GameStatistics(commands.Cog):
 
         await daily_games.ingest_message(message)
 
+        await asyncio.sleep(200)
         fixed_link = await daily_games.get_a_fixed_link(message)
         if fixed_link is not None:
             await message.channel.send(f"<{fixed_link}>")

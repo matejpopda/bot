@@ -1,6 +1,9 @@
 import seaborn as sns
 import discord
 from .daily_games.utils import GameInfo
+from .daily_games.models import Scores
+import datetime
+import prettytable
 
 
 def set_default_graph_formatting():
@@ -52,3 +55,41 @@ async def send_error_webhook(webhook: discord.Webhook, text, title="Error", ephe
     await webhook.send(
         embed=embed, ephemeral=ephemeral
     )
+
+def latest_games_into_a_table(input_list: list[Scores], username, verbose):
+    todays_date =  datetime.datetime.now(datetime.timezone.utc).date()
+
+    table = prettytable.PrettyTable()
+    table.field_names = [ "Game", "🕹️", "Score","Played on"]
+
+
+    for score in input_list:
+        if (score.date_of_game == todays_date):
+            played_today = "✅"
+        elif verbose and (score.date_of_game == todays_date - datetime.timedelta(days=2) or score.date_of_game == todays_date - datetime.timedelta(days=1)):
+            played_today = "⚠️"
+        else: 
+            played_today = "⛔"
+
+        table.add_row([score.game, played_today, score.score, score.date_of_game])
+
+
+    table.set_style(prettytable.TableStyle.SINGLE_BORDER)
+    table.padding_width = 0
+    table.max_width = 18
+    if verbose:
+        description = table.get_string()
+    else: 
+        description = table.get_string(fields=["🕹️", "Game"])
+
+
+    title = f"Most recent saved games  by {username}"
+    embed = discord.Embed(color=discord.Colour.blue(), title=title, description=f"```{description}```")
+
+
+    return embed
+
+
+
+
+

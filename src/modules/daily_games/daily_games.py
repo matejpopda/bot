@@ -68,8 +68,8 @@ async def ingest_message(message: discord.Message):
 
 
 async def ingest_games_in_channel_from_context(ctx: discord.ApplicationContext, limit=None):
-    channel: discord.interactions.InteractionChannel = ctx.channel
-    await ingest_games_in_channel(limit, channel)
+    channel = ctx.channel
+    await ingest_games_in_channel(channel, limit)
 
 
 async def ingest_games_in_channel(channel:discord.TextChannel, limit):
@@ -219,7 +219,7 @@ link_association = [
 async def get_a_fixed_link(message: discord.Message) -> str | None:
     for broken, fixed_messages in link_association:
         if broken in message.content:
-            async for msg in message.channel.history(limit=25):
+            async for msg in message.channel.history(limit=20):
                 for fixed in fixed_messages:
                     if fixed in msg.content:
                         return

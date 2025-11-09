@@ -3,7 +3,7 @@ import datetime
 import discord
 import datetime
 import logging
-
+import dataclasses
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy
 import sqlalchemy.orm
@@ -201,3 +201,34 @@ async def generate_multiuser_graph(
 
 
 
+
+async def get_recently_played_games_for_user(user: discord.user, days_lookback_back=3) -> list[Scores]: 
+    async with database.AsyncSessionLocal() as session:
+        how_long_ago = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days_lookback_back)
+        how_long_ago = how_long_ago.date()
+        subq = (
+            sqlalchemy.select(
+                Scores.game,
+                sqlalchemy.func.max(Scores.timestamp).label("latest")
+            )
+            .where(Scores.user_id == user.id)
+            .where(Scores.timestamp >= how_long_ago)
+            .group_by(Scores.game)
+            .subquery()
+        )
+
+        latest = sqlalchemy.orm.aliased(Scores)
+        stmt = (
+            sqlalchemy.select(latest)
+            .join(
+                subq,
+                (latest.game == subq.c.game)
+                & (latest.timestamp == subq.c.latest)
+            )
+            .where(latest.user_id == user.id)
+            .order_by(latest.date_of_game.asc()) 
+        )
+
+        query_result = await session.execute(stmt)
+        
+        return query_result.scalars().all()
