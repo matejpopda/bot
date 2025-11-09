@@ -111,7 +111,7 @@ async def generate_user_graph(
                 data, y="Score", x=date_or_number, kind="scatter", aspect=1.5
             )
         case "Line plot":
-            g = sns.relplot(data, y="Score", x=date_or_number, kind="line", aspect=1.5)
+            g = sns.relplot(data, y="Score", x=date_or_number, kind="line", aspect=1.5, markers="o", style="User", legend=None)
         case "Linear regression":
             g = sns.lmplot(data, y="Score", x=date_or_number, aspect=1.5)
         case _:
@@ -198,3 +198,6 @@ async def generate_multiuser_graph(
     buf.seek(0)
     file = discord.File(buf, filename="score-history.png")
     return file
+
+
+
