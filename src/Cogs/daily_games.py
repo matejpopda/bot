@@ -90,6 +90,10 @@ class GameStatistics(commands.Cog):
         player_4,
         dates_instead_of_numbers,scatter_instead_of_line,
     ):
+        
+        if not game in daily_games.available_games:
+            await response_utils.send_error_response(ctx, "Unknown game")
+            return
 
         try:
             file = await daily_games.generate_multiuser_graph(
@@ -136,7 +140,9 @@ class GameStatistics(commands.Cog):
         graph_type,
         dates_instead_of_numbers,
     ):
-
+        if not game in daily_games.available_games:
+            await response_utils.send_error_response(ctx, "Unknown game")
+            return
         try:
             file = await daily_games.generate_user_graph(
                 game, user, graph_type, dates_instead_of_numbers
@@ -163,8 +169,9 @@ class GameStatistics(commands.Cog):
     @discord.option("format", type=str, choices=["human-readable", "csv"], default="human-readable", description="Output format")
     @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
     async def user_stats(self, ctx: discord.ApplicationContext, game, user, format, ephemeral):
-        output = io.StringIO()
-
+        if not game in daily_games.available_games:
+            await response_utils.send_error_response(ctx, "Unknown game")
+            return
         if user is None:
             user = ctx.user
 
@@ -173,7 +180,8 @@ class GameStatistics(commands.Cog):
         if len(scores) == 0:
             await response_utils.send_error_response(ctx, f"User {user.name} has no saved scores for {game}")
             return
-
+        
+        output = io.StringIO()
         if format == "csv":
             output.write("date, game_number, score\n")
         for score in scores:
@@ -235,7 +243,9 @@ class GameStatistics(commands.Cog):
     )
     @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
     async def game_info(self, ctx: discord.ApplicationContext, game, ephemeral):
-
+        if not game in daily_games.available_games:
+            await response_utils.send_error_response(ctx, "Unknown game")
+            return
         info = daily_games.get_game_info(game)
         embed = response_utils.format_game_info_into_embed(info)
         await ctx.respond( embed=embed, ephemeral=ephemeral)
