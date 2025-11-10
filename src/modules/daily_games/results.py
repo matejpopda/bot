@@ -59,6 +59,7 @@ async def raw_game_user_data(game: str, user_id):
                     "date": score.date_of_game,
                     "gamenumber": score.game_number,
                     "user_id": score.user_id,
+                    "game": score.game
                 }
             )
         return result
@@ -73,6 +74,7 @@ async def game_user_dataframe(game: str, user: discord.User):
             "user_id": "User",
             "date": "Date",
             "gamenumber": "Game Number",
+            "game": "Game"
         }
     )
     data = data.replace(user.id, user.name)
@@ -199,6 +201,73 @@ async def generate_multiuser_graph(
     file = discord.File(buf, filename="score-history.png")
     return file
 
+
+
+joint_graph_types = {
+    "Scatter graph":"scatter",
+    "Kernel Density Estimate" : "kde",
+    "Histogram" : "hist",
+    "Hexagonal Histogram" : "hex",
+    "Linear regression": "reg",
+    "Linear regression residuals": "resid",
+}
+async def generate_multiuser_jointgraph(
+    game1: str,
+    game2: str,
+    player_1: User,
+    player_2: User | None,
+    player_3: User | None,
+    player_4: User | None,
+    kind: str
+):
+
+    data = []
+    players = set(
+        [x for x in (player_1, player_2, player_3, player_4) if x is not None]
+    )
+
+    for index, player in enumerate(players.copy()):
+        if player is None:
+            continue
+
+        player_data1 = await game_user_dataframe(game1, player)
+        player_data2 = await game_user_dataframe(game2, player)
+
+        if len(player_data2) == 0 or len(player_data1) == 0:
+            players.remove(player)
+            continue
+
+        player_data1.drop(columns="Game Number", inplace=True)
+        player_data2.drop(columns="Game Number", inplace=True)
+        player_data2.drop(columns="User", inplace=True)
+
+        player_data = player_data1.merge(player_data2, "inner","Date")
+
+
+        if len(player_data.index) == 0:
+            players.remove(player)
+            continue
+
+        data.append(player_data)
+
+    if len(data) == 0:
+        raise ValueError("Trying to generate graph from no data")
+
+    data = pd.concat(data, ignore_index=True)
+
+    data = data.rename(columns={"Score_x": f"Score {game1}", "Score_y": f"Score {game2}", "User_x": "User"})
+
+    g = sns.jointplot(data=data, x=f"Score {game1}", y= f"Score {game2}", hue="User", kind=joint_graph_types[kind])
+
+
+    # game_info = daily_games.get_game_info(game)
+    # g.ax.set(ylabel=game_info.score_name, title=f"Graph of {game} scores")
+
+    buf = io.BytesIO()
+    g.savefig(buf, format="png", dpi=200)
+    buf.seek(0)
+    file = discord.File(buf, filename="score-history.png")
+    return file
 
 
 

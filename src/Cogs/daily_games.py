@@ -91,7 +91,7 @@ class GameStatistics(commands.Cog):
         dates_instead_of_numbers,scatter_instead_of_line,
     ):
         
-        if not game in daily_games.available_games:
+        if not game in [x.name for x in daily_games.available_games]:
             await response_utils.send_error_response(ctx, "Unknown game")
             return
 
@@ -102,6 +102,82 @@ class GameStatistics(commands.Cog):
             await ctx.response.send_message(file=file)
         except ValueError as e: 
             await response_utils.send_error_response(ctx, "No scores found for selected users. They most likely weren't ingested.")
+
+
+
+    @dailies_command_group.command(
+        description="Post a jointgraph with game scores."
+    )
+    @discord.option(
+        "game_x",
+        type=str,
+        autocomplete=discord.utils.basic_autocomplete(daily_games.available_games),
+        description="What game on x axis",
+    )    
+    @discord.option(
+        "game_y",
+        type=str,
+        autocomplete=discord.utils.basic_autocomplete(daily_games.available_games),
+        description="What game on y axis",
+    )
+    @discord.option(
+        "player_1",
+        type=discord.SlashCommandOptionType.user,
+        required=True,
+        description="Player 1",
+    )
+    @discord.option(
+        "player_2",
+        type=discord.SlashCommandOptionType.user,
+        required=False,
+        description="Player 2",
+    )
+    @discord.option(
+        "player_3",
+        type=discord.SlashCommandOptionType.user,
+        required=False,
+        description="Player 3",
+    )
+    @discord.option(
+        "player_4",
+        type=discord.SlashCommandOptionType.user,
+        required=False,
+        description="Player 4",
+    )
+    @discord.option(
+        "graph_type",
+        type=str,
+        choices=daily_games.joint_graph_types.keys(),
+        default="Kernel Density Estimate",
+        description="What graph to draw",
+    )
+    async def joint_graph(
+        self,
+        ctx: discord.ApplicationContext,
+        game_x,
+        game_y,
+        player_1,
+        player_2,
+        player_3,
+        player_4,
+        graph_type
+    ):
+        
+        if not game_x in [x.name for x in daily_games.available_games]:
+            await response_utils.send_error_response(ctx, "Unknown game")
+            return        
+        if not game_y in [x.name for x in daily_games.available_games]:
+            await response_utils.send_error_response(ctx, "Unknown game")
+            return
+
+        try:
+            file = await daily_games.generate_multiuser_jointgraph(
+                game_x, game_y, player_1, player_2, player_3, player_4, graph_type
+            )
+            await ctx.response.send_message(file=file)
+        except ValueError as e: 
+            await response_utils.send_error_response(ctx, f"No scores found for selected users. {e.args}.")
+
 
 
     @dailies_command_group.command(
@@ -140,7 +216,7 @@ class GameStatistics(commands.Cog):
         graph_type,
         dates_instead_of_numbers,
     ):
-        if not game in daily_games.available_games:
+        if not game in [x.name for x in daily_games.available_games]:
             await response_utils.send_error_response(ctx, "Unknown game")
             return
         try:
@@ -169,7 +245,7 @@ class GameStatistics(commands.Cog):
     @discord.option("format", type=str, choices=["human-readable", "csv"], default="human-readable", description="Output format")
     @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
     async def user_stats(self, ctx: discord.ApplicationContext, game, user, format, ephemeral):
-        if not game in daily_games.available_games:
+        if not game in [x.name for x in daily_games.available_games]:
             await response_utils.send_error_response(ctx, "Unknown game")
             return
         if user is None:
@@ -243,7 +319,7 @@ class GameStatistics(commands.Cog):
     )
     @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
     async def game_info(self, ctx: discord.ApplicationContext, game, ephemeral):
-        if not game in daily_games.available_games:
+        if not game in [x.name for x in daily_games.available_games]:
             await response_utils.send_error_response(ctx, "Unknown game")
             return
         info = daily_games.get_game_info(game)
