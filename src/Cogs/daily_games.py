@@ -148,7 +148,7 @@ class GameStatistics(commands.Cog):
         "graph_type",
         type=str,
         choices=daily_games.joint_graph_types.keys(),
-        default="Kernel Density Estimate",
+        default="Histogram",
         description="What graph to draw",
     )
     async def joint_graph(
@@ -162,13 +162,13 @@ class GameStatistics(commands.Cog):
         player_4,
         graph_type
     ):
-        
-        if not game_x in [x.name for x in daily_games.available_games]:
+        available_games = [x.name for x in daily_games.available_games]
+        if not (game_x in available_games and game_y in available_games):
             await response_utils.send_error_response(ctx, "Unknown game")
             return        
-        if not game_y in [x.name for x in daily_games.available_games]:
-            await response_utils.send_error_response(ctx, "Unknown game")
-            return
+        
+        if graph_type == "Kernel Density Estimate" and game_x==game_y:
+            await response_utils.send_error_response(ctx, "Cannot graph 2 identical datasets with KDE")
 
         try:
             file = await daily_games.generate_multiuser_jointgraph(
@@ -176,7 +176,7 @@ class GameStatistics(commands.Cog):
             )
             await ctx.response.send_message(file=file)
         except ValueError as e: 
-            await response_utils.send_error_response(ctx, f"No scores found for selected users. {e.args}.")
+            await response_utils.send_error_response(ctx, f"No scores found for selected users. Most likely werent ingested. \n Got following error: {e.args}.")
 
 
 

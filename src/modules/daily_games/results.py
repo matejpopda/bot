@@ -7,7 +7,7 @@ import dataclasses
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy
 import sqlalchemy.orm
-
+import numpy as np
 from .. import database
 
 
@@ -244,6 +244,7 @@ async def generate_multiuser_jointgraph(
         player_data = player_data1.merge(player_data2, "inner","Date")
 
 
+
         if len(player_data.index) == 0:
             players.remove(player)
             continue
@@ -255,9 +256,26 @@ async def generate_multiuser_jointgraph(
 
     data = pd.concat(data, ignore_index=True)
 
-    data = data.rename(columns={"Score_x": f"Score {game1}", "Score_y": f"Score {game2}", "User_x": "User"})
+    graph_type = joint_graph_types[kind]
 
-    g = sns.jointplot(data=data, x=f"Score {game1}", y= f"Score {game2}", hue="User", kind=joint_graph_types[kind])
+
+    if not game1 == game2:
+        data = data.rename(columns={"Score_x": f"Score {game1}", "Score_y": f"Score {game2}"})
+        x=f"Score {game1}" 
+        y= f"Score {game2}"
+    else:
+        x="Score_x"
+        y="Score_y"
+
+
+    if not graph_type in ["resid", "reg"]:
+        hue = "User"
+    else:
+        hue = None
+
+
+
+    g = sns.jointplot(data=data, x=x,y=y , hue=hue, kind=graph_type)
 
 
     # game_info = daily_games.get_game_info(game)
