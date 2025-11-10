@@ -24,6 +24,12 @@ def string_to_pages_embed(text, title=None, footer=None):
     embed.set_footer(text=footer)
     return embed
     
+
+def default_text_embed(title, text=None, footer=None, image=None):
+    embed = discord.Embed(color=discord.Colour.blue(), title=title, description=text, image=image)
+    embed.set_footer(text=footer)
+    return embed
+
 def string_to_error_embed(text, error_title="Error"):
     embed = discord.Embed(color=discord.Colour.red(), title=error_title, description=text)
     return embed

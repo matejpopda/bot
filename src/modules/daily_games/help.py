@@ -5,7 +5,7 @@ from discord.ext import pages
 
 help_page_groups = []
 
-footer="Navigate using this dropdown!"
+footer="Navigate using the dropdown below!"
 text="This module is used for plotting statistics of different available daily games.\n\n\n " \
 "The related dailies-debug slash commands are used to setup the bot. (Available only for people with manage channels permissions.)"
 front_page = pages.Page(
