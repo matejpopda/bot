@@ -296,10 +296,10 @@ async def get_recently_played_games_for_user(user: discord.user, days_lookback_b
         subq = (
             sqlalchemy.select(
                 Scores.game,
-                sqlalchemy.func.max(Scores.timestamp).label("latest")
+                sqlalchemy.func.max(Scores.date_of_game).label("latest")
             )
             .where(Scores.user_id == user.id)
-            .where(Scores.timestamp >= how_long_ago)
+            .where(Scores.date_of_game >= how_long_ago)
             .group_by(Scores.game)
             .subquery()
         )
@@ -310,7 +310,7 @@ async def get_recently_played_games_for_user(user: discord.user, days_lookback_b
             .join(
                 subq,
                 (latest.game == subq.c.game)
-                & (latest.timestamp == subq.c.latest)
+                & (latest.date_of_game == subq.c.latest)
             )
             .where(latest.user_id == user.id)
             .order_by(latest.date_of_game.asc()) 
