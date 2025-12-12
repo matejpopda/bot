@@ -25,6 +25,8 @@ logger = logging.getLogger("dailies")
 registered_parsers: dict[re.Pattern, tuple[Callable, str]] = {}
 available_games = []
 
+loggable_channel_types = (discord.TextChannel, discord.Thread, discord.DMChannel)
+
 
 def register_parser(game_name: str, pattern: str):
     def decorator(func: Callable):
@@ -72,8 +74,9 @@ async def ingest_games_in_channel_from_context(ctx: discord.ApplicationContext, 
     await ingest_games_in_channel(channel, limit)
 
 
-async def ingest_games_in_channel(channel:discord.TextChannel, limit):
-    logger.info(f"Ingesting messages in {channel.id} - name: {channel.name}.")
+async def ingest_games_in_channel(channel, limit):
+    assert isinstance(channel, loggable_channel_types)
+    logger.info(f"Ingesting messages in {channel.id} - name: {channel_name(channel)}.")
     async for msg in channel.history(limit=limit):
         if msg.author.bot == True:
             continue
@@ -93,18 +96,39 @@ async def on_message_edit(message: discord.Message):
 
 
 async def release_games_in_channel(ctx: discord.ApplicationContext):
-    logger.info(f"Releasing messages in {ctx.channel.id} - name: {ctx.channel.name}.")
+    channel = ctx.channel
+    assert isinstance(channel, loggable_channel_types)
+
+
+    logger.info(f"Releasing messages in {channel.id} - name: {channel_name(channel)}.")
 
     async with database.AsyncSessionLocal.begin() as session:
-        channel: discord.interactions.InteractionChannel = ctx.channel
+        channel: discord.interactions.InteractionChannel = channel
         await session.execute(
             sqlalchemy.delete(Scores).where(Scores.channel_id == channel.id)
         )
+
+def channel_name(channel):
+    assert isinstance(channel, loggable_channel_types)
+    return channel.name if not isinstance(channel, discord.DMChannel) else channel.me.name
 
 
 async def reingest_games_in_channel(ctx: discord.ApplicationContext):
     await release_games_in_channel(ctx)
     await ingest_games_in_channel_from_context(ctx)
+
+
+async def reingest_games_in_registered_channels(bot: discord.Bot):
+        result = await get_all_registered_channel_ids()
+
+        for channel_id in result:
+            channel = bot.get_channel(channel_id)
+
+
+            if channel is None:
+                continue
+
+            await ingest_games_in_channel(channel=channel, limit=80)
 
 
 game_info: dict[str, utils.GameInfo] = {}
@@ -118,7 +142,10 @@ def get_game_info(game_name: str):
     return game_info[game_name]
 
 async def register_channel(ctx: discord.ApplicationContext):
-    logger.info(f"Registering channel {ctx.channel.id} - name: {ctx.channel.name}.")
+    channel = ctx.channel
+    assert isinstance(channel, loggable_channel_types)
+
+    logger.info(f"Registering channel {channel.id} - name: {channel_name(channel)}.")
     # sqlalchemy.exc.IntegrityError
     async with database.AsyncSessionLocal.begin() as session:
         channel = RegisteredChannels()
@@ -131,7 +158,11 @@ async def register_channel(ctx: discord.ApplicationContext):
 
 
 async def unregister_channel(ctx: discord.ApplicationContext):
-    logger.info(f"Unregistering channel {ctx.channel.id} - name: {ctx.channel.name}.")
+
+    channel = ctx.channel
+    assert isinstance(channel, loggable_channel_types)
+
+    logger.info(f"Unregistering channel {channel.id} - name: {channel_name(channel)}.")
 
     # sqlalchemy.exc.NoResultFound
     async with database.AsyncSessionLocal.begin() as session:
@@ -188,7 +219,7 @@ async def send_score_to_database(
             message_id=message.id,
             user_id=message.author.id,
             timestamp=message.created_at,
-            guild_id=message.guild.id,
+            guild_id=message.guild.id if message.guild is not None else None,
             score=gamescore,
             date_of_game=gamedate,
             game_number=gamenumber,

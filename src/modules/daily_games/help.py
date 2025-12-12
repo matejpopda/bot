@@ -76,6 +76,9 @@ def get_help_paginator():
     original_on_timeout = paginator.on_timeout
     async def on_timeout_overload():
         await original_on_timeout()
+
+        assert paginator.message is not None
+
         await paginator.message.edit(view=None)
 
     

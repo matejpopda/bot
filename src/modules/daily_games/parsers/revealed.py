@@ -46,6 +46,10 @@ def revealed_parser(message: discord.Message):
 
     reveals = emoji_to_int(result["reveals_raw"])
     hints = emoji_to_int(result["hints_raw"])
+
+    if hints is None:
+        hints = 0 # Should never really matter as far as I know
+
     if reveals is None:
         score = 7 + 4 + 1  # max reveal + max hints + 1
     else:

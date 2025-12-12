@@ -37,10 +37,10 @@ def catfishing_parser(message: discord.Message):
         return
     result = data.groupdict()
 
-    game_number = result["game_number"]
+    game_number = int(result["game_number"])
 
     score = result["score"]
 
     date = utils.date_after_days_passed(CATFISHING_ORIGIN_DATE, game_number)
 
-    return float(score), date, int(game_number)
+    return float(score), date, game_number

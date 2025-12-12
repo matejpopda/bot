@@ -15,9 +15,9 @@ def simulate_roll(dice_notation, cumulative_plot, rolls=10000):
     counts = np.array([np.sum(results == t) for t in totals])
     pdf = counts / counts.sum()
 
-    avg = np.mean(results)
-    mode = np.median(results)
-    variance = np.var(results)
+    avg = float(np.mean(results))
+    mode = float(np.median(results))
+    variance = float(np.var(results))
 
     plt.figure(figsize=(6, 4))
 

@@ -46,4 +46,4 @@ def scrandle_parser(message: discord.Message) -> tuple[int, datetime.date, int] 
     game_number = utils.how_many_days_since_date(SCRANDLE_FIRST_GAME_DATE, date)
 
 
-    return float(score), date, int(game_number)
+    return score, date, game_number

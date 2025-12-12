@@ -28,10 +28,11 @@ pattern = re.compile(
 )
 
 @register_parser(game_name, r"^Framed")
-def framed_parser(message: discord.Message) -> tuple[int, datetime.date, int] | None:
+def framed_parser(message: discord.Message) -> tuple[float, datetime.date, int] | None:
 
     text = message.content
 
+    score = None
 
     data = pattern.search(text)
     if data is None:
@@ -43,10 +44,12 @@ def framed_parser(message: discord.Message) -> tuple[int, datetime.date, int] | 
         guesses = m.group("guesses").strip().split()
         score = guesses.index("🟩") + 1 if "🟩" in guesses else 7
 
-
-    game_number = result["game_number"]
+    if score is None:
+        return
+    game_number = int(result["game_number"])
 
     date = utils.date_after_days_passed(FRAMED_FIRST_GAME_DATE, game_number)
 
 
-    return float(score), date, int(game_number)
+
+    return float(score), date, game_number

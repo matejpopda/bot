@@ -16,6 +16,7 @@ Roll breakdown: {dice}
 
 def parse_ctx_to_get_dice_notation(ctx: discord.ApplicationContext):
     logging.debug(ctx.selected_options)
+    assert ctx.selected_options is not None
     return next(
         (
             option["value"]

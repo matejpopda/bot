@@ -46,6 +46,7 @@ async def main():
     bot.add_cog(ttrpgtools.TttrpgTools(bot))
     bot.add_cog(fun.Fun(bot))
 
+    assert isinstance(config["TOKEN"], str)
     await bot.start(config["TOKEN"])
 
 

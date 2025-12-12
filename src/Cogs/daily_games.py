@@ -258,6 +258,7 @@ class GameStatistics(commands.Cog):
             return
         
         output = io.StringIO()
+        line = ""
         if format == "csv":
             output.write("date, game_number, score\n")
         for score in scores:
@@ -267,12 +268,10 @@ class GameStatistics(commands.Cog):
                 case "csv":
                     line = f"{score["date"].isoformat()}, {score["gamenumber"]}, {score["score"]}\n"
 
-            output.write(
-                line
-            )
+            output.write(line)
 
         output.seek(0)
-        file = discord.File(fp=output, filename=f"{game}-scores-for-{user.name}.txt")
+        file = discord.File(fp=output, filename=f"{game}-scores-for-{user.name}.txt") # type: ignore , type problem of pycord
 
         await ctx.response.send_message(
             content=f"Here are {user.display_name} scores for {game}", ephemeral=ephemeral, file=file
@@ -297,6 +296,7 @@ class GameStatistics(commands.Cog):
         lookback = 21 if verbose else 3
 
         scores = await daily_games.get_recently_played_games_for_user(user, lookback)
+        scores = list(scores)
 
         if len(scores) == 0:
             await response_utils.send_error_response(ctx, f"User {user.name} has no recently saved scores.")
@@ -438,12 +438,7 @@ class GameStatistics(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        result = await daily_games.get_all_registered_channel_ids()
-
-        for channel_id in result:
-            channel = self.bot.get_channel(channel_id)
-            await daily_games.ingest_games_in_channel(channel=channel, limit=80)
-
+        await daily_games.reingest_games_in_registered_channels(self.bot)
 
     @commands.Cog.listener()
     async def on_message_edit(self, message_before: discord.Message, message_after: discord.Message):

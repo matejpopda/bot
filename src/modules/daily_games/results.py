@@ -113,7 +113,7 @@ async def generate_user_graph(
                 data, y="Score", x=date_or_number, kind="scatter", aspect=1.5
             )
         case "Line plot":
-            g = sns.relplot(data, y="Score", x=date_or_number, kind="line", aspect=1.5, markers="o", style="User", legend=None)
+            g = sns.relplot(data, y="Score", x=date_or_number, kind="line", aspect=1.5, markers="o", style="User", legend=False)
         case "Linear regression":
             g = sns.lmplot(data, y="Score", x=date_or_number, aspect=1.5)
         case _:
@@ -131,7 +131,7 @@ async def generate_user_graph(
     return file
 
 
-type User = discord.SlashCommandOptionType.user
+type User = discord.User
 
 
 async def generate_multiuser_graph(
@@ -289,7 +289,7 @@ async def generate_multiuser_jointgraph(
 
 
 
-async def get_recently_played_games_for_user(user: discord.user, days_lookback_back=3) -> list[Scores]: 
+async def get_recently_played_games_for_user(user: discord.User, days_lookback_back=3): 
     async with database.AsyncSessionLocal() as session:
         how_long_ago = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days_lookback_back)
         how_long_ago = how_long_ago.date()

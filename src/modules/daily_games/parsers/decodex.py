@@ -44,4 +44,4 @@ def decodex_parser(message: discord.Message) -> tuple[int, datetime.date, int] |
     date = datetime.datetime.strptime(result['date'], "%Y-%m-%d").date()
     game_number = utils.how_many_days_since_date(DECODEX_FIRST_GAME_DATE, date)
 
-    return float(score), date, int(game_number)
+    return score, date, game_number

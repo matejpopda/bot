@@ -39,9 +39,9 @@ def betweenle_parser(message: discord.Message) -> tuple[int, datetime.date, int]
 
     score = result["score"]
 
-    game_number = result["game_number"]
+    game_number = int(result["game_number"])
 
     date = utils.date_after_days_passed(BETWEENLE_FIRST_GAME_DATE, game_number)
 
 
-    return float(score), date, int(game_number)
+    return int(score), date, game_number

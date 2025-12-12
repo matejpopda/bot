@@ -38,7 +38,7 @@ def syllacrostic_parser(message: discord.Message):
         return
     result = data.groupdict()
 
-    game_number = result["game_number"]
+    game_number = int(result["game_number"])
 
     time_string = result["time"]
     t = datetime.datetime.strptime(time_string, "%M:%S")
@@ -47,4 +47,4 @@ def syllacrostic_parser(message: discord.Message):
 
     date = utils.date_after_days_passed(SYLLACROSTIC_ORIGIN_DATE, game_number)
 
-    return float(score), date, int(game_number)
+    return score, date, game_number
