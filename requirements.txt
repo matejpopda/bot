@@ -1,33 +1,35 @@
 # discord library
-py-cord
-pynacl # voice chat stuff doesnt work without
+py-cord==2.6.1
+PyNaCl==1.6.0 # voice chat stuff doesnt work without
 
 #.env file handling
-python-dotenv
+python-dotenv==1.2.1
 
 # Formatter
-Black
+black==25.9.0
 
 # Database 
-SQLAlchemy
-aiosqlite
-alembic
+SQLAlchemy==2.0.44
+
+aiosqlite==0.21.0
+alembic==1.17.1
+
 
 # Dice rolling library for TTRPG
-dyce
-d20
+dyce==0.6.2
+d20==1.1.2
 
 # Plotting library for statistics
-seaborn
+seaborn==0.13.2
 
 # Random online functionality
-requests
+requests==2.32.5
 
 # this library is needed when running python 3.13 or above
-audioop-lts; python_version>='3.13'
+audioop-lts==0.2.2; python_version>='3.13'
 
 # YAML files
-PyYAML
+PyYAML==6.0.3
 
 # Output formatting
-prettytable
+prettytable==3.16.0
