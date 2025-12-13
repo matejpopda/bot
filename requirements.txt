@@ -33,3 +33,7 @@ PyYAML==6.0.3
 
 # Output formatting
 prettytable==3.16.0
+
+
+# Songs module
+lyricsgenius==3.7.5

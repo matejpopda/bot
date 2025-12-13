@@ -257,21 +257,17 @@ class GameStatistics(commands.Cog):
             await response_utils.send_error_response(ctx, f"User {user.name} has no saved scores for {game}")
             return
         
-        output = io.StringIO()
-        line = ""
+        output = ""
         if format == "csv":
-            output.write("date, game_number, score\n")
+            output += ("date, game_number, score\n")
         for score in scores:
             match format:
                 case "human-readable":
-                    line = f"{score["date"].isoformat()} - Game {score["gamenumber"]} - Score {score["score"]}\n"
+                    output +=  f"{score["date"].isoformat()} - Game {score["gamenumber"]} - Score {score["score"]}\n"
                 case "csv":
-                    line = f"{score["date"].isoformat()}, {score["gamenumber"]}, {score["score"]}\n"
+                    output +=  f"{score["date"].isoformat()}, {score["gamenumber"]}, {score["score"]}\n"
 
-            output.write(line)
-
-        output.seek(0)
-        file = discord.File(fp=output, filename=f"{game}-scores-for-{user.name}.txt") # type: ignore , type problem of pycord
+        file = discord.File(fp=io.BytesIO(output.encode()), filename=f"{game}-scores-for-{user.name}.txt") 
 
         await ctx.response.send_message(
             content=f"Here are {user.display_name} scores for {game}", ephemeral=ephemeral, file=file
