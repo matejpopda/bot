@@ -41,6 +41,7 @@ def count_mixed_lines(lines):
         
         if len(set(line)) > 1: # converting to set to find out if its unique
             count += 1
+    return count
 
 @register_parser(game_name, r"^Connections")
 def connections_parser(message: discord.Message):
