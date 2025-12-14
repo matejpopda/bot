@@ -8,6 +8,8 @@ from ..modules import response_utils
 
 console_logger = logging.getLogger("console")
 
+song_logger = logging.getLogger("songs")
+
 
 class Songs(commands.Cog):
 
@@ -27,9 +29,8 @@ class Songs(commands.Cog):
     @discord.option("artist_name", type=str, default="", description="Artist name")
     @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
     async def lyrics(self, ctx: discord.ApplicationContext, song_name, artist_name="",  ephemeral=True):
-
+        author = ctx.author
         if song_name is None: 
-            author = ctx.author
 
             if isinstance(author, discord.User) and len(author.mutual_guilds)>0:
                 author = author.mutual_guilds[0].get_member(author.id)
@@ -40,7 +41,7 @@ class Songs(commands.Cog):
                 artist_name = await songs.song_main_artist_from_activities(author.activities)
 
         if song_name is None:
-            await response_utils.send_error_response(ctx, f"No song specified and couldn't read user activity. Activity requires you to be in a server where the bot exists.")
+            await response_utils.send_error_response(ctx, f"No song specified and couldn't read user activity. In order to get the song from an activity you need to be in a server with the bot.")
             return           
 
         response = ctx.interaction.response
@@ -48,6 +49,7 @@ class Songs(commands.Cog):
         await response.defer(ephemeral=ephemeral)
 
 
+        song_logger.info(f"Retrieving {song_name} for user {author.name} - user id:{author.id}")
         song = await songs.song_lyrics(song_name=song_name, artist_name=artist_name)
 
         if song is None:

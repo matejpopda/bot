@@ -59,7 +59,7 @@ async def send_success_webhook(webhook: discord.Webhook, text, title="Success", 
 async def send_error_webhook(webhook: discord.Webhook, text, title="Error", ephemeral=True):
     embed = string_to_error_embed(text, title)
     await webhook.send(
-        embed=embed, ephemeral=ephemeral
+        embed=embed, ephemeral=ephemeral, delete_after=20
     )
 
 def latest_games_into_a_table(input_list: list[Scores], username, verbose):
