@@ -244,6 +244,10 @@ link_association = [
         "syllacrostic.com",
         ("https://syllacrostic.com/", "https://www.syllacrostic.com/"),
     ),
+    ("Pips #", ("https://www.nytimes.com/games/pips", "https://nytimes.com/games/pips")),
+    ("Connections\nPuzzle #", ("https://www.nytimes.com/games/connections", "https://nytimes.com/games/connections")),
+    ("REUNION ", ("https://www.merriam-webster.com/games/reunion", "https://merriam-webster.com/games/reunion")),
+    ("Wordle ", ("https://www.nytimes.com/games/wordle", "https://nytimes.com/games/wordle")),
 ]
 
 
