@@ -27,9 +27,16 @@ pattern = re.compile(
     r"^(?P<game>Connections)\s*\nPuzzle\s*#(?P<number>\d+)", re.MULTILINE
 )
 
-def count_mixed_lines(lines):
-    count = 0
-        
+def score(lines: list[str]):
+    good_lines = 0
+    bad_lines = 0
+    
+    def score_calc(solved_lines: int, failed_lines:int):
+        if failed_lines >= 4:
+            return solved_lines * 10
+        else:
+            return 25* solved_lines - 10* failed_lines
+
     for line in lines:
         if not line:
             continue
@@ -40,8 +47,10 @@ def count_mixed_lines(lines):
             continue
         
         if len(set(line)) > 1: # converting to set to find out if its unique
-            count += 1
-    return count
+            bad_lines += 1
+        else:
+            good_lines += 1
+    return score_calc(good_lines, bad_lines)
 
 @register_parser(game_name, r"^Connections")
 def connections_parser(message: discord.Message):
@@ -55,7 +64,7 @@ def connections_parser(message: discord.Message):
 
 
 
-    score = count_mixed_lines(text.splitlines()[2:])
+    score = score(text.splitlines()[2:])
 
     game_number = int(result["number"])
 
@@ -83,7 +92,7 @@ def connections_parser_2(message: discord.Message):
     result = data.groupdict()
 
 
-    score = count_mixed_lines(text.splitlines()[1:])
+    score = score(text.splitlines()[1:])
     game_number = int(result["number"])
 
     date = utils.date_after_days_passed(CONNECTIONS_ORIGIN_DATE, game_number)
