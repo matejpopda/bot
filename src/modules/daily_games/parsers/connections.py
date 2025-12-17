@@ -49,8 +49,11 @@ def calc_score(lines: list[str]):
     for line in lines:
         if not line:
             continue
-        if len(line) != 4:
+        if len(line) < 4:
             continue
+
+        if len(line) > 4:
+            line = line[:4]
 
         if any(ch in string.ascii_lowercase for ch in line):
             continue
@@ -60,7 +63,13 @@ def calc_score(lines: list[str]):
         else:
             good_lines += 1
 
-    return score_calc_helper(good_lines, bad_lines)
+    result = score_calc_helper(good_lines, bad_lines)
+
+    if 0 > result:
+        for i in lines:
+            print(i)
+
+    return result 
 
 @register_parser(game_name, r"^Connections")
 def connections_parser(message: discord.Message):
