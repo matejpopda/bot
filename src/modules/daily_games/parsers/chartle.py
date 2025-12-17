@@ -41,7 +41,7 @@ def chartle_parser(message: discord.Message):
 
     date = datetime.datetime.strptime(data["date"], "%d %b %Y").date()
 
-    score: int = result["tries"]
+    score: int = int(result["tries"]) if result["tries"] else 6
 
     game_number = utils.how_many_days_since_date(CHARTLE_ORIGIN_DATE, date)
 

@@ -24,5 +24,6 @@ from . import (
     framed,
     scrandle,
     betweenle,
-    decodex
+    decodex,
+    chartle
 )

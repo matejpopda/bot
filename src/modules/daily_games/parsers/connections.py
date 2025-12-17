@@ -11,13 +11,22 @@ CONNECTIONS_ORIGIN_DATE = datetime.date(day=11, month=6, year=2023)
 game_name = "Connections"
 
 
+
+description = """ Find the 4 categories based on the connections between words.
+
+Score is calculated as + 25% per correct answer - 10% per mistake. 
+When you fail to guess you gain partial credit equal to 10% per correct answer. 
+
+TLDR: Score of less than 60 was a failed game. 
+"""
+
 game_info = utils.GameInfo(
     game_name=game_name,
-    fail_score=4,
-    lower_score_is_better=True,
-    score_name="Failed guesses",
+    fail_score=60,
+    lower_score_is_better=False,
+    score_name="Score - Higher is better",
     url="https://www.nytimes.com/games/connections",
-    description="Find the 4 categories based on the connections between words.",
+    description=description,
 )
 
 add_game_info(game_name, game_info)
@@ -27,11 +36,11 @@ pattern = re.compile(
     r"^(?P<game>Connections)\s*\nPuzzle\s*#(?P<number>\d+)", re.MULTILINE
 )
 
-def score(lines: list[str]):
+def calc_score(lines: list[str]):
     good_lines = 0
     bad_lines = 0
     
-    def score_calc(solved_lines: int, failed_lines:int):
+    def score_calc_helper(solved_lines: int, failed_lines:int):
         if failed_lines >= 4:
             return solved_lines * 10
         else:
@@ -43,14 +52,15 @@ def score(lines: list[str]):
         if len(line) != 4:
             continue
 
-        if any(ch not in string.ascii_lowercase for ch in line):
+        if any(ch in string.ascii_lowercase for ch in line):
             continue
         
         if len(set(line)) > 1: # converting to set to find out if its unique
             bad_lines += 1
         else:
             good_lines += 1
-    return score_calc(good_lines, bad_lines)
+
+    return score_calc_helper(good_lines, bad_lines)
 
 @register_parser(game_name, r"^Connections")
 def connections_parser(message: discord.Message):
@@ -64,7 +74,8 @@ def connections_parser(message: discord.Message):
 
 
 
-    score = score(text.splitlines()[2:])
+    score = calc_score(text.splitlines()[2:])
+
 
     game_number = int(result["number"])
 
@@ -92,7 +103,7 @@ def connections_parser_2(message: discord.Message):
     result = data.groupdict()
 
 
-    score = score(text.splitlines()[1:])
+    score = calc_score(text.splitlines()[1:])
     game_number = int(result["number"])
 
     date = utils.date_after_days_passed(CONNECTIONS_ORIGIN_DATE, game_number)
