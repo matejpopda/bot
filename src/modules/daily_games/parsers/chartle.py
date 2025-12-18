@@ -23,7 +23,7 @@ add_game_info(game_name, game_info)
 
 pattern  = re.compile(
     r'^📈\s*Chartle\s+for\s+(?P<date>\d{1,2}\s+\w+\s+\d{4}):\s+(?P<title>.+?)\r?\n\r?\n'
-    r'(?:Failed to guess this time|Guessed in\s+(?P<tries>\d+)\s+tries)',
+    r'(?:Failed to guess this time|Guessed in\s+(?P<tries>\d+)\s+tr)',
     re.MULTILINE
 )
 
