@@ -35,6 +35,9 @@ class Songs(commands.Cog):
             if isinstance(author, discord.User) and len(author.mutual_guilds)>0:
                 author = author.mutual_guilds[0].get_member(author.id)
             
+            # print(author.mutual_guilds)
+            # print(author, author.id)
+            
             assert isinstance(author, discord.Member)
             if author is not None:
                 song_name = await songs.song_title_from_activities(author.activities)
