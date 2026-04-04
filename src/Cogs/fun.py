@@ -78,6 +78,7 @@ class Fun(commands.Cog):
     @discord.option("image_url", type=str, description="Url of image to overlay onto, transparent bg otherwise", required=False)
     async def noun_verbed(self, ctx: discord.ApplicationContext, text:str, text_type:noun_verbed.TextTypes, image_url:str|None):
 
+        await ctx.defer(ephemeral=False)
 
         if image_url is not None:
             response = requests.get(image_url)
@@ -93,4 +94,4 @@ class Fun(commands.Cog):
                             image_binary.seek(0)
                             file = discord.File(image_binary, filename="nounverbed.png")
 
-                            await ctx.respond(file=file)
+        await ctx.followup.send(file=file)

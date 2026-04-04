@@ -180,8 +180,9 @@ def generate_black_shadow(info:ImageInfoContainer):
 def generate_text_glow(info:ImageInfoContainer):
 
     overlay = Image.new("RGBA", info.dims_vec, color=(0,0,0,0))
-    for i in range(info.font_size//2):
-        edgesize = i
+    for i in range(15):
+
+        edgesize = i * int(info.width/320)
 
         overlay_draw = ImageDraw.Draw(overlay)
         overlay_draw.text(info.img_center, info.text, fill=info.color_scheme.glowcolor, font=info.font, anchor="mm")
