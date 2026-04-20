@@ -56,6 +56,12 @@ async def send_success_webhook(webhook: discord.Webhook, text, title="Success", 
         embed=embed, ephemeral=ephemeral
     )
 
+async def webhook_followup(webhook: discord.Webhook, text, ephemeral=True):
+    await webhook.send(
+        content=text, ephemeral=ephemeral
+    )
+
+
 async def send_error_webhook(webhook: discord.Webhook, text, title="Error", ephemeral=True):
     embed = string_to_error_embed(text, title)
     await webhook.send(

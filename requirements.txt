@@ -37,3 +37,15 @@ prettytable==3.16.0
 
 # Songs module
 lyricsgenius==3.7.5
+
+
+# Audio Work
+librosa
+audiofile
+
+# LLms and other machine learning stuff
+torch
+
+torchaudio
+torchvision
+transformers

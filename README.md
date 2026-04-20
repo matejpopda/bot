@@ -2,6 +2,16 @@
 
 
 
+# Dependencies
+
+## The transcription module
+Requires ffmpeg, mediainfo and sox (from the audiophile module)
+`sudo apt-get install ffmpeg mediainfo sox`
+
+
+
+If you have Cuda install cuda capable torch 
+`pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126`
 
 
 # Installing it yourself

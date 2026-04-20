@@ -1,6 +1,12 @@
 # Priority 1 (Active)
 
+Inference model needs to be chunked 30s limit rn  
 
+
+QA command 
+Command to interact in chat. 
+
+Transcribe and maybe translate text? 
 
 
 # Priority 2 (Concrete ideas)
@@ -16,7 +22,7 @@ Utility function to create utc time with discord formats
 
 Some fun functions to draw patterns - for example from this video https://youtu.be/tcwFd8JbzQY
 
-
+add Hugging Face Token maybe
 
 ## Economy
 - Cat tokens

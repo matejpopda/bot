@@ -15,6 +15,7 @@ import src.Cogs.debug as debug
 import src.Cogs.ttrpgtools as ttrpgtools
 import src.Cogs.fun as fun
 import src.Cogs.songs as songs 
+import src.Cogs.inference as inference
 
 import src.modules.database 
 import src.modules.response_utils  
@@ -38,7 +39,8 @@ async def main():
     config = dotenv.dotenv_values("config_files/.env")
     bot = commands.Bot(
         default_command_integration_types=integration_types, 
-        intents=intents
+        intents=intents,
+        command_prefix="!"
     )
 
     await src.modules.database.init_db()
@@ -48,6 +50,8 @@ async def main():
     bot.add_cog(fun.Fun(bot))
     bot.add_cog(songs.Songs(bot))
     bot.add_cog(debug.Debug(bot))
+    bot.add_cog(inference.Inference(bot))
+
 
     assert isinstance(config["TOKEN"], str)
     await bot.start(config["TOKEN"])
