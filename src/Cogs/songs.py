@@ -27,19 +27,20 @@ class Songs(commands.Cog):
     @dailies_command_group.command(description="Responds with song lyrics.")
     @discord.option("song_name", type=str, default=None, description="Name of the song, if empty it gets taken from rich presence if possible")
     @discord.option("artist_name", type=str, default="", description="Artist name")
-    @discord.option("ephemeral", type=bool, default=True, description="Should the output be hidden from others")
+    @discord.option("ephemeral", type=bool, default=False, description="Should the output be hidden from others")
     async def lyrics(self, ctx: discord.ApplicationContext, song_name, artist_name="",  ephemeral=True):
         author = ctx.author
         if song_name is None: 
 
+            if isinstance(author, discord.Member) and not ctx.guild in self.bot.guilds:
+                author = author._user
+
+
             if isinstance(author, discord.User) and len(author.mutual_guilds)>0:
                 author = author.mutual_guilds[0].get_member(author.id)
+
             
-            # print(author.mutual_guilds)
-            # print(author, author.id)
-            
-            assert isinstance(author, discord.Member)
-            if author is not None:
+            if author is not None and not isinstance(author, discord.User):
                 song_name = await songs.song_title_from_activities(author.activities)
                 artist_name = await songs.song_main_artist_from_activities(author.activities)
 
@@ -52,7 +53,7 @@ class Songs(commands.Cog):
         await response.defer(ephemeral=ephemeral)
 
 
-        song_logger.info(f"Retrieving {song_name} for user {author.name} - user id:{author.id}")
+        song_logger.info(f"Retrieving {song_name} for user {ctx.author.name} - user id:{ctx.author.id}")
         song = await songs.song_lyrics(song_name=song_name, artist_name=artist_name)
 
         if song is None:
