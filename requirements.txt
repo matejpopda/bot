@@ -40,8 +40,8 @@ lyricsgenius==3.7.5
 
 
 # Audio Work
-librosa
 audiofile
+yt_dlp
 
 # LLms and other machine learning stuff
 torch

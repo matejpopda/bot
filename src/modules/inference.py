@@ -6,7 +6,12 @@ import gc
 import asyncio
 import time
 import dataclasses
+import logging
 import enum
+import aiohttp
+import discord
+import yt_dlp
+import yt_dlp.utils
 
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 import transformers
@@ -19,7 +24,7 @@ huggingface_hub.logging.set_verbosity_error()
 class LazyGemma4E2BIT:
     def __init__(
         self,
-        idle_timeout: int = 60,
+        idle_timeout: int = 180,
         check_interval: int = 30,
     ):
         self.idle_timeout = idle_timeout
@@ -108,7 +113,6 @@ class Character():
 class Characters(enum.Enum):
     cat = "Mr. Whiskers"
     depressed_assistant = "Depressed Assistant" 
-    
 
 
 
@@ -151,33 +155,84 @@ Follow these specific instructions for formatting the answer:
 * Only output the transcription, with no newlines.
 * When transcribing numbers, write the digits, i.e. write 1.7 and not one point seven, and write 3 instead of three.
                      
+There is overlap between the segments. 
+
 Don't reply with the instructions.
 """
 async def infer_audio(input_bytes: bytes):
-    with tempfile.TemporaryDirectory() as tmpdir:
+    with tempfile.TemporaryDirectory(delete=True) as tmpdir:
         input_path = os.path.join(tmpdir, "input")
-        output_path = os.path.join(tmpdir, "output.wav")
+        middle_path = os.path.join(tmpdir, "input.wav")
+        output_paths = [] 
 
         with open(input_path, "wb") as f:
             f.write(input_bytes)
 
-        audiofile.convert_to_wav(input_path, output_path)
+        audiofile.convert_to_wav(input_path, middle_path)
+        
+        duration = int(audiofile.duration(middle_path))
+
+
+        for i in range(0, duration, 28):
+            if i > 600:
+                break
+            path = os.path.join(tmpdir, f"output{i}.wav")
+            output_paths.append(path)
+
+            audiofile.convert_to_wav(middle_path, path, duration=30, offset=i)
+
+        
         messages = [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "audio",
-                        "audio": output_path,
-                    },
-                    {"type": "text", "text": audio_inference_string},
-                ],
-            }
+        {"role": "system", "content": [{"type": "text", "text":audio_inference_string}]},
+        {"role": "user", "content": [{"type": "audio", "audio":x} for x in output_paths]},
         ]
 
+
         output = await model(messages)  # type: ignore
-    return output[0]["generated_text"][1]["content"]
+    return output[0]["generated_text"][-1]["content"]
 
 async def infer_video(input: bytes):
     return await infer_audio(input)
 
+
+
+
+def download_with_ytdlp(url: str) -> bytes | None:
+    try:
+        with tempfile.NamedTemporaryFile() as tmp:
+            temp_path = tmp.name
+            ydl_opts = {
+                "format": "bestaudio/best",
+                "outtmpl": temp_path,
+                "max_filesize": 20 * 1024 * 1024,
+                "quiet": True,
+                "no_warnings": True,
+                "merge_output_format": "mp4",
+                "User-Agent": "Mozilla/5.0",
+                "logger": logging.getLogger()
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore
+                ydl.extract_info(url, download=False)
+
+                ydl.download([url])
+
+            with open(temp_path+".mp4", "rb") as f:
+                return f.read()
+            
+    except Exception:
+        pass
+
+    return None
+
+async def download_video_from_embed(video: discord.EmbedMedia) -> bytes|None:
+    if video.proxy_url is not None:
+        try: 
+            async with aiohttp.ClientSession() as session:
+                async with session.get(video.proxy_url, allow_redirects=True) as resp:
+                    if resp.status == 200:
+                        if resp.headers.get("Content-Type", "").startswith("video"):
+                            return await resp.read()
+        except aiohttp.ClientError:
+            pass
+
+    return await asyncio.to_thread(download_with_ytdlp, video.url)

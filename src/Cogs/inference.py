@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 import logging
-import io
 
 from ..modules import inference
 from ..modules import response_utils
@@ -53,18 +52,20 @@ class Inference(commands.Cog):
     async def transcribe(self, ctx: discord.ApplicationContext, message: discord.Message) :
         response = ctx.interaction.response
 
-        embeds: list[discord.EmbedMedia] = []
+        embed_urls: list[discord.EmbedMedia] = []
         attachments: list[discord.Attachment] = []
         for i in message.embeds:
-            if i.image is not None:
-                embeds.append(i.image)
-            if i.thumbnail is not None:
-                embeds.append(i.thumbnail)
+            # if "audio" in i.type or "video" in i.type:
+            if i.video is not None: 
+                embed_urls.append(i.video)
+
+
+
         for i in message.attachments:
             attachments.append(i)
 
 
-        if len(embeds) + len(attachments) == 0:
+        if len(embed_urls) + len(attachments) == 0:
             await response_utils.send_error_response(ctx, f"No attachments.")
             return
 
@@ -81,6 +82,18 @@ class Inference(commands.Cog):
             if "video" in attachment.content_type:
                 res = await attachment.read()
                 response_str += str(await inference.infer_video(res))
+
+        for embed in embed_urls:
+            res = await inference.download_video_from_embed(embed)
+            if res is None:
+                continue
+            response_str += ""
+            response_str += str(await inference.infer_audio(res))
+
+        if response_str == "":
+            await response_utils.send_error_webhook(ctx.followup, "Couldn't parse the videos. Usually posting an embed proxy helps.")
+            return
+
     
 
         await response_utils.send_success_webhook(ctx.followup, response_str, title="Audio Transcription")

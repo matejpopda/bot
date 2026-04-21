@@ -46,3 +46,4 @@ In gamestatistics.py, when registering the parser its not possible to have 2 gam
 
 
 Issues: 
+in download_video_embed we create the client each time
