@@ -208,8 +208,9 @@ def download_with_ytdlp(url: str) -> bytes | None:
                 "quiet": True,
                 "no_warnings": True,
                 "merge_output_format": "mp4",
-                "User-Agent": "Mozilla/5.0",
-                "logger": logging.getLogger()
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "logger": logging.getLogger(),
+                "cookiefile": "config_files/www.youtube.com_cookies.txt"
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore
                 ydl.extract_info(url, download=False)
