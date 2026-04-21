@@ -11,7 +11,6 @@ import enum
 import aiohttp
 import discord
 import yt_dlp
-import yt_dlp.utils
 
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 import transformers
@@ -21,11 +20,11 @@ transformers.utils.logging.set_verbosity_error()
 huggingface_hub.logging.set_verbosity_error()
 
 
-class LazyGemma4E2BIT:
+class LazyGemma4E4BIT:
     def __init__(
         self,
-        idle_timeout: int = 180,
-        check_interval: int = 30,
+        idle_timeout: int = 90,
+        check_interval: int = 15,
     ):
         self.idle_timeout = idle_timeout
         self.check_interval = check_interval
@@ -41,7 +40,9 @@ class LazyGemma4E2BIT:
 
             self._pipe = await loop.run_in_executor(
                 None,
-                lambda: transformers.pipeline("any-to-any", model="google/gemma-4-e2b-it", device=0 if torch.cuda.is_available() else -1, max_new_tokens=512),
+                lambda: transformers.pipeline("any-to-any", model="google/gemma-4-e2b-it", device=0 if torch.cuda.is_available() else -1, max_new_tokens=512, model_kwargs={
+                    # "quantization_config": transformers.BitsAndBytesConfig(load_in_8bit=True), # breaks transcription of audio
+                }),
             )
 
         await self.start_cleanup_loop()
@@ -94,7 +95,7 @@ class LazyGemma4E2BIT:
             if should_unload:
                 await self.unload()
 
-model = LazyGemma4E2BIT()
+model = LazyGemma4E4BIT()
 
 
 

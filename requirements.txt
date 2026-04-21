@@ -45,7 +45,7 @@ yt_dlp
 
 # LLms and other machine learning stuff
 torch
-
+bitsandbytes>=0.46.1
 torchaudio
 torchvision
 transformers
