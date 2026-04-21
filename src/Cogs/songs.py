@@ -45,7 +45,7 @@ class Songs(commands.Cog):
                 artist_name = await songs.song_main_artist_from_activities(author.activities)
 
         if song_name is None:
-            await response_utils.send_error_response(ctx, f"No song specified and couldn't read user activity. In order to get the song from an activity you need to be in a server with the bot.")
+            await response_utils.send_error_response(ctx, f"No song specified and couldn't read user activity. In order to get the song from an activity you need to be in a server with the bot and be a little lucky.")
             return           
 
         response = ctx.interaction.response
