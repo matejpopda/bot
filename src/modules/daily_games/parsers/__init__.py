@@ -13,6 +13,7 @@ from . import (
     gisnep,
     kinda_hard_golf,
     minigolfle,
+    nonodaily,
     pips,
     reunion,
     revealed,
@@ -25,5 +26,9 @@ from . import (
     scrandle,
     betweenle,
     decodex,
-    chartle
+    chartle,
+    cutle,
+    enclosehorse,
+    tiledwords,
+    parseword
 )
