@@ -35,7 +35,7 @@ class Inference(commands.Cog):
         if chanel is None:
             await response_utils.send_error_response(ctx, "Cant access channel.")
 
-        messages = list(reversed(await chanel.history(limit=25).flatten()))
+        messages = list(reversed(await chanel.history(limit=50).flatten()))
 
         await response.defer(ephemeral=ephemeral)
 
@@ -45,10 +45,13 @@ class Inference(commands.Cog):
         else:
             bots_username=self.bot.user.name
 
-        answer = await inference.add_to_chat(messages, mood, bots_username=bots_username)
+        try: 
+            answer = await inference.add_to_chat(messages, mood, bots_username=bots_username)
 
-        await response_utils.webhook_followup(ctx.followup, answer)
-        
+            await response_utils.webhook_followup(ctx.followup, answer)
+        except discord.errors.ApplicationCommandInvokeError as e:
+            logging.error(e)
+            await response_utils.send_error_webhook(ctx.followup, text="Failed to generate. Try again.")
 
 
     @llm_command_group.command(description="Talk to the bot.")
@@ -123,3 +126,18 @@ class Inference(commands.Cog):
         await response_utils.send_success_webhook(ctx.followup, response_str, title="Audio Transcription")
 
         
+
+    @commands.message_command(description="Describes message and its attachments.")
+    async def describe(self, ctx: discord.ApplicationContext, message: discord.Message) :
+        response = ctx.interaction.response
+
+        await response.defer(ephemeral=False)
+        response_str = await inference.describe_media(message)
+
+        if response_str == "":
+            await response_utils.send_error_webhook(ctx.followup, "Read message was empty. Not sure how you managed that.")
+            return
+
+    
+
+        await response_utils.send_success_webhook(ctx.followup, response_str, title="Description")

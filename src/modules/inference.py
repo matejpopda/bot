@@ -43,7 +43,8 @@ class LazyGemma4E4BIT:
                 None,
                 lambda: transformers.pipeline("any-to-any", model="google/gemma-4-e2b-it", device=0 if torch.cuda.is_available() else -1, max_new_tokens=512, model_kwargs={
                     # "quantization_config": transformers.BitsAndBytesConfig(load_in_8bit=True), # breaks transcription of audio
-                }),
+                },
+                load_audio_from_video=True),
             )
 
         await self.start_cleanup_loop()
@@ -119,7 +120,10 @@ class Moods(enum.Enum):
 
 def mood_prompts(input:Moods):
 
-    start = "You are a cat. Your name is Mr. Whiskers. Your fur color is blue."
+    start = "You are a cat, sometimes called Mr. Whiskers. Your fur color is blue. Do NOT prepend your name to every message."
+
+
+
     match input:
         case Moods.cat:
             return Character(name= "Cat", system_text=f"{start} Meow in your answers sometimes. Use emoticons instead of emoji. Example: :3 >:3 ;3." )
@@ -144,27 +148,31 @@ async def single_question(input_str: str, mood:Moods):
     return output[0]["generated_text"][-1]["content"]
 
 
+async def describe_media(input_msg: discord.Message):
+# Responses should be at most one paragraph. Maybe add this rule
+    with tempfile.TemporaryDirectory() as tmpdir:
+        messages = [
+        {"role": "system", "content": [{"type": "text", "text": f"Describe what is happening in the attached media. Summarize text."}]},
+        await message_into_prompt(input_msg, pathlib.Path(tmpdir), None),
+        ]
+
+        output = await model(messages)  # type: ignore
+        return output[0]["generated_text"][-1]["content"]
+
+
+
 
 async def add_to_chat(input_messages: list[discord.Message], mood: Moods, bots_username:str):
     charinfo = mood_prompts(mood)
     messages = []
-    messages.append({"role": "system", "content": [{"type": "text", "text":f"{charinfo.system_text}. Your messages are marked with BOT. Add one or two sentences to the conversation. Never write BOT in your response."}]})
+    messages.append({"role": "system", "content": [{"type": "text", "text":f"{charinfo.system_text}. Add to the conversation. At least one full sentence. "}]})
     with tempfile.TemporaryDirectory() as tmpdir:
         for mess in input_messages:
             messages.append(await message_into_prompt(mess, pathlib.Path(tmpdir), bots_username))
+
+        messages.append({"role": "user", "content": [{"type": "text", "text":f"Continue."}]})
         output = await model(messages)  # type: ignore
     return output[0]["generated_text"][-1]["content"]
-
-
-async def summarize_chat(input_messages: list[discord.Message]):
-    messages = []
-    messages.append({"role": "system", "content": [{"type": "text", "text":"Sumarize what was said."}]})
-    with tempfile.TemporaryDirectory() as tmpdir:
-        for mess in input_messages:
-            messages.append(await message_into_prompt(mess, pathlib.Path(tmpdir)))
-        output = await model(messages)  # type: ignore
-    return output[0]["generated_text"][-1]["content"]
-
 
 
 async def message_into_prompt(message: discord.Message, tmpdir:pathlib.Path, bots_username:str|None=None):
@@ -172,12 +180,13 @@ async def message_into_prompt(message: discord.Message, tmpdir:pathlib.Path, bot
     content = []
 
     author_name = message.author.display_name
+    role = "assistant" if author_name == bots_username else "user"
 
     if author_name == bots_username:
-        author_name = "BOT"
-
-    who = {"type":"text", "text": f"{author_name} - {message.created_at.strftime("%H:%M")}\n {message.content}"}
-    content.append(who)
+        who = {"type":"text", "text": f"{message.content}"}
+    else: 
+        who = {"type":"text", "text": f"{author_name} - {message.created_at.strftime("%H:%M")}\n {message.content}"}
+        content.append(who)
 
     
     for attachment in message.attachments:
@@ -205,7 +214,15 @@ async def message_into_prompt(message: discord.Message, tmpdir:pathlib.Path, bot
                 f.write(video_bytes)
             video = {"type":"video", "video": str((tmpdir/str(attachment.id)).absolute()) }
             content.append(video)
-    return {"role": "user", "content": content}
+
+    for embed in message.embeds:
+        for field in embed.fields:
+            content.append({"type":"text", "text": f"{field.value}"})
+
+
+
+
+    return {"role": role, "content": content}
 
 
 
