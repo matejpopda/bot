@@ -47,5 +47,6 @@ yt_dlp
 torch
 bitsandbytes>=0.46.1
 torchaudio
+torchcodec
 torchvision
 transformers

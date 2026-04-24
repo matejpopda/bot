@@ -8,6 +8,7 @@
 Requires ffmpeg, mediainfo and sox (from the audiophile module)
 `sudo apt-get install ffmpeg mediainfo sox`
 
+on windows TorchCodec requires ffmpeg installation with shared libraries
 
 
 If you have Cuda install cuda capable torch 

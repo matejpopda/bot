@@ -149,10 +149,9 @@ async def single_question(input_str: str, mood:Moods):
 
 
 async def describe_media(input_msg: discord.Message):
-# Responses should be at most one paragraph. Maybe add this rule
     with tempfile.TemporaryDirectory() as tmpdir:
         messages = [
-        {"role": "system", "content": [{"type": "text", "text": f"Describe what is happening in the attached media. Summarize text."}]},
+        {"role": "system", "content": [{"type": "text", "text": f"Describe what is happening in the attached media. Summarize text if there is any. It's more likely that it's a video than a series of images."}]},
         await message_into_prompt(input_msg, pathlib.Path(tmpdir), None),
         ]
 
