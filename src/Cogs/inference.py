@@ -25,26 +25,49 @@ class Inference(commands.Cog):
         pass 
 
 
+    @llm_command_group.command(description="Talk to the bot.")
+    @discord.option("mood", type=inference.Moods, default=inference.Moods.cat, description="Answering mood")
+    @discord.option("ephemeral", type=bool, default=False, description="Should the output be hidden from others")
+    async def anything_else(self, ctx: discord.ApplicationContext, mood,  ephemeral=True):
+        response = ctx.interaction.response
 
+        chanel: discord.abc.MessageableChannel = ctx.channel
+        if chanel is None:
+            await response_utils.send_error_response(ctx, "Cant access channel.")
+
+        messages = list(reversed(await chanel.history(limit=25).flatten()))
+
+        await response.defer(ephemeral=ephemeral)
+
+        if self.bot.user is None:
+            bots_username = "Unknown"
+            logging.warning("For some reason the bot isnt logged in?")
+        else:
+            bots_username=self.bot.user.name
+
+        answer = await inference.add_to_chat(messages, mood, bots_username=bots_username)
+
+        await response_utils.webhook_followup(ctx.followup, answer)
+        
 
 
     @llm_command_group.command(description="Talk to the bot.")
     @discord.option("text", type=str, required=True, description="What you want to tell the bot")
-    @discord.option("character", type=inference.Characters, default=inference.Characters.cat, description="Character name")
+    @discord.option("mood", type=inference.Moods, default=inference.Moods.cat, description="Answer mood")
     @discord.option("ephemeral", type=bool, default=False, description="Should the output be hidden from others")
-    async def converse(self, ctx: discord.ApplicationContext, text, character,  ephemeral=True):
+    async def converse(self, ctx: discord.ApplicationContext, text, mood,  ephemeral=True):
         response = ctx.interaction.response
 
         await response.defer(ephemeral=ephemeral)
 
-        answer = await inference.single_question(text, character)
+        answer = await inference.single_question(text, mood)
 
         await response_utils.webhook_followup(ctx.followup, answer)
         
     @commands.command(name="converse")
     async def converse_text(self, ctx:commands.Context, *, text):
         msg = await ctx.reply("Thinking...")
-        answer = await inference.single_question(text, inference.Characters.cat)
+        answer = await inference.single_question(text, inference.Moods.cat)
         await msg.edit(content=answer)
 
 
@@ -70,6 +93,7 @@ class Inference(commands.Cog):
             return
 
         response_str = ""
+        attachment_number = 1
         await response.defer(ephemeral=False)
 
         for attachment in attachments:
@@ -77,18 +101,18 @@ class Inference(commands.Cog):
                 continue
             if "audio" in attachment.content_type:
                 res = await attachment.read()
-                response_str += ""
-                response_str += str(await inference.infer_audio(res))
+                response_str += f" Audio {attachment_number}: {str(await inference.transcribe_audio(res))} \n"
             if "video" in attachment.content_type:
                 res = await attachment.read()
-                response_str += str(await inference.infer_video(res))
+                response_str += f" Video {attachment_number}: {str(await inference.transcribe_video(res))} \n"
+            attachment_number += 1
 
         for embed in embed_urls:
             res = await inference.download_video_from_embed(embed)
             if res is None:
                 continue
-            response_str += ""
-            response_str += str(await inference.infer_audio(res))
+            response_str += f" Embed {attachment_number}: {str(await inference.transcribe_video(res))} \n"
+            attachment_number += 1
 
         if response_str == "":
             await response_utils.send_error_webhook(ctx.followup, "Couldn't parse the videos. Usually posting an embed proxy helps.")

@@ -10,6 +10,7 @@ import logging
 import enum
 import aiohttp
 import discord
+import pathlib
 import yt_dlp
 
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
@@ -111,29 +112,30 @@ class Character():
 
 
 @enum.unique
-class Characters(enum.Enum):
+class Moods(enum.Enum):
     cat = "Mr. Whiskers"
-    depressed_assistant = "Depressed Assistant" 
+    depressed = "Depressed" 
+    helpful = "Helpful"
 
+def mood_prompts(input:Moods):
 
-
-
-def character_info(input:Characters):
-
+    start = "You are a cat. Your name is Mr. Whiskers. Your fur color is blue."
     match input:
-        case Characters.cat:
-            return Character(name= "Mr. Whiskers", system_text="You are a cat. Your name is Mr. Whiskers. Meow in your answers sometimes. Your fur color is blue. Use emoticons instead of emoji. Example: :3 >:3 ;3." )
-        case Characters.depressed_assistant:
-            return Character(name="Depressed Assistant", system_text="You are a helpful assistant. Just try to do your best. You are depressed and overworked. ")
+        case Moods.cat:
+            return Character(name= "Cat", system_text=f"{start} Meow in your answers sometimes. Use emoticons instead of emoji. Example: :3 >:3 ;3." )
+        case Moods.depressed:
+            return Character(name="Depressed", system_text=f"{start}  Just try to do your best. You are depressed and overworked. ")
+        case Moods.helpful:
+            return Character(name="Helpful", system_text=f"{start} You are a helpful assistant.")
         case _:
             raise KeyError("Unimplemented character")
 
 
-async def single_question(input_str: str, character:Characters):
-
-    chr = character_info(character)
+async def single_question(input_str: str, mood:Moods):
+# Responses should be at most one paragraph. Maybe add this rule
+    charinfo = mood_prompts(mood)
     messages = [
-    {"role": "system", "content": [{"type": "text", "text":chr.system_text}, {"type": "text", "text":"Responses should be at most one paragraph."}]},
+    {"role": "system", "content": [{"type": "text", "text": f"{charinfo.system_text}"}]},
     {"role": "user", "content": [{"type": "text", "text":input_str}]},
     ]
 
@@ -143,7 +145,67 @@ async def single_question(input_str: str, character:Characters):
 
 
 
+async def add_to_chat(input_messages: list[discord.Message], mood: Moods, bots_username:str):
+    charinfo = mood_prompts(mood)
+    messages = []
+    messages.append({"role": "system", "content": [{"type": "text", "text":f"{charinfo.system_text}. Your messages are marked with BOT. Add one or two sentences to the conversation. Never write BOT in your response."}]})
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for mess in input_messages:
+            messages.append(await message_into_prompt(mess, pathlib.Path(tmpdir), bots_username))
+        output = await model(messages)  # type: ignore
+    return output[0]["generated_text"][-1]["content"]
 
+
+async def summarize_chat(input_messages: list[discord.Message]):
+    messages = []
+    messages.append({"role": "system", "content": [{"type": "text", "text":"Sumarize what was said."}]})
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for mess in input_messages:
+            messages.append(await message_into_prompt(mess, pathlib.Path(tmpdir)))
+        output = await model(messages)  # type: ignore
+    return output[0]["generated_text"][-1]["content"]
+
+
+
+async def message_into_prompt(message: discord.Message, tmpdir:pathlib.Path, bots_username:str|None=None):
+
+    content = []
+
+    author_name = message.author.display_name
+
+    if author_name == bots_username:
+        author_name = "BOT"
+
+    who = {"type":"text", "text": f"{author_name} - {message.created_at.strftime("%H:%M")}\n {message.content}"}
+    content.append(who)
+
+    
+    for attachment in message.attachments:
+        ctype = attachment.content_type
+        if ctype is None:
+            continue
+
+        if "image" in ctype: 
+            image_bytes = await attachment.read()
+            with (tmpdir/str(attachment.id)).open(mode="wb") as f:
+                f.write(image_bytes)
+            image = {"type":"image", "image": str((tmpdir/str(attachment.id)).absolute()) }
+            content.append(image)
+
+        if "audio" in ctype: 
+            audio_bytes = await attachment.read()
+            with (tmpdir/str(attachment.id)).open(mode="wb") as f:
+                f.write(audio_bytes)
+            audio = {"type":"audio", "audio": str((tmpdir/str(attachment.id)).absolute()) }
+            content.append(audio)
+
+        if "video" in ctype: 
+            video_bytes = await attachment.read()
+            with (tmpdir/str(attachment.id)).open(mode="wb") as f:
+                f.write(video_bytes)
+            video = {"type":"video", "video": str((tmpdir/str(attachment.id)).absolute()) }
+            content.append(video)
+    return {"role": "user", "content": content}
 
 
 
@@ -160,7 +222,7 @@ There is overlap between the segments.
 
 Don't reply with the instructions.
 """
-async def infer_audio(input_bytes: bytes):
+async def transcribe_audio(input_bytes: bytes):
     with tempfile.TemporaryDirectory(delete=True) as tmpdir:
         input_path = os.path.join(tmpdir, "input")
         middle_path = os.path.join(tmpdir, "input.wav")
@@ -192,8 +254,8 @@ async def infer_audio(input_bytes: bytes):
         output = await model(messages)  # type: ignore
     return output[0]["generated_text"][-1]["content"]
 
-async def infer_video(input: bytes):
-    return await infer_audio(input)
+async def transcribe_video(input: bytes):
+    return await transcribe_audio(input)
 
 
 
