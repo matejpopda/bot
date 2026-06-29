@@ -30,5 +30,7 @@ from . import (
     cutle,
     enclosehorse,
     tiledwords,
-    parseword
+    parseword,
+    fourbythree,
+    gambdle
 )

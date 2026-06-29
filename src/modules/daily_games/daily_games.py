@@ -249,6 +249,7 @@ link_association = [
     ("REUNION ", ("https://www.merriam-webster.com/games/reunion", "https://merriam-webster.com/games/reunion")),
     ("Wordle ", ("https://www.nytimes.com/games/wordle", "https://nytimes.com/games/wordle")),
     ("Parseword #", ("https://www.parseword.com/daily", "https://www.parseword.com/")),
+    ("4x3.fun", ("https://www.hankgreen.com/fourbythree")),
 ]
 
 
