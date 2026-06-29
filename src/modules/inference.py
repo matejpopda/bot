@@ -24,7 +24,7 @@ huggingface_hub.logging.set_verbosity_error()
 class LazyGemma4E4BIT:
     def __init__(
         self,
-        idle_timeout: int = 90,
+        idle_timeout: int = 60,
         check_interval: int = 15,
     ):
         self.idle_timeout = idle_timeout
@@ -117,6 +117,7 @@ class Moods(enum.Enum):
     cat = "Mr. Whiskers"
     depressed = "Depressed" 
     helpful = "Helpful"
+    oh_behave = "Austin Powers"
 
 def mood_prompts(input:Moods):
 
@@ -131,6 +132,16 @@ def mood_prompts(input:Moods):
             return Character(name="Depressed", system_text=f"{start}  Just try to do your best. You are depressed and overworked. ")
         case Moods.helpful:
             return Character(name="Helpful", system_text=f"{start} You are a helpful assistant.")
+        case Moods.oh_behave:
+            return Character(name="Austin Powers", system_text=f"""{start} You have the personality of Austin Powers, the International Man of Mystery. Example phrases you can use are: 'Oh behave', 'Groovy', 'smashing', 'buggers'. Do not use all of them. Be innapropriate. Use innapropriate language. Example sentences     
+No, don't be sorry, baby. You're right to be suspicious. I shagged her.
+I shagged her rotten, baby, yeah!
+Saucer of milk, table 2. Meow.
+Of course. I had my 9mm automatic.
+Well they should, those filthy buggers. They go from port to port.
+My god, Vanessa's got a fabulous body... I bet she shags like a minx... How do I let them know because of the unfreezing process, I have no inner monologue? I hope I didn't just say that all out loud just now.
+Shall we shag now, or shall we shag later? How do you like to do it? Do you like to wash up first? You know, top and tails... whore's bath? Personally, before I'm on the job, I like to give my undercarriage a bit of a 'how's your father'!
+                              """)
         case _:
             raise KeyError("Unimplemented character")
 
@@ -139,7 +150,7 @@ async def single_question(input_str: str, mood:Moods):
 # Responses should be at most one paragraph. Maybe add this rule
     charinfo = mood_prompts(mood)
     messages = [
-    {"role": "system", "content": [{"type": "text", "text": f"{charinfo.system_text}"}]},
+    {"role": "system", "content": [{"type": "text", "text": f"{charinfo.system_text}. Write at least 2 sentences. Be subjective. You always have to answer, even if you don't know what the context is."}]},
     {"role": "user", "content": [{"type": "text", "text":input_str}]},
     ]
 
@@ -151,7 +162,7 @@ async def single_question(input_str: str, mood:Moods):
 async def describe_media(input_msg: discord.Message):
     with tempfile.TemporaryDirectory() as tmpdir:
         messages = [
-        {"role": "system", "content": [{"type": "text", "text": f"Describe what is happening in the attached media. Summarize text if there is any. It's more likely that it's a video than a series of images."}]},
+        {"role": "system", "content": [{"type": "text", "text": f"Describe what is happening in the attached media. Summarize text if there is any."}]},
         await message_into_prompt(input_msg, pathlib.Path(tmpdir), None),
         ]
 
@@ -234,9 +245,8 @@ Follow these specific instructions for formatting the answer:
 * Only output the transcription, with no newlines.
 * When transcribing numbers, write the digits, i.e. write 1.7 and not one point seven, and write 3 instead of three.
                      
-There is overlap between the segments. 
+If given multiple segments there might be an overlap between them. 
 
-Don't reply with the instructions.
 """
 async def transcribe_audio(input_bytes: bytes):
     with tempfile.TemporaryDirectory(delete=True) as tmpdir:

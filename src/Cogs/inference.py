@@ -35,7 +35,12 @@ class Inference(commands.Cog):
         if chanel is None:
             await response_utils.send_error_response(ctx, "Cant access channel.")
 
-        messages = list(reversed(await chanel.history(limit=50).flatten()))
+        try:    
+            messages = list(reversed(await chanel.history(limit=25).flatten()))
+        except discord.errors.Forbidden as e:
+            await response_utils.send_error_response(ctx, "Cant access channel.")
+            return
+            
 
         await response.defer(ephemeral=ephemeral)
 
@@ -92,7 +97,7 @@ class Inference(commands.Cog):
 
 
         if len(embed_urls) + len(attachments) == 0:
-            await response_utils.send_error_response(ctx, f"No attachments.")
+            await response_utils.send_error_response(ctx, f"No attachments.", ephemeral=True)
             return
 
         response_str = ""
