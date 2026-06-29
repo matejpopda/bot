@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 
@@ -21,6 +21,7 @@ game_info = utils.GameInfo(
 
 add_game_info(game_name, game_info)
 
+register_link_association_for_automatic_link_posting("Parseword #", ("https://www.parseword.com/daily", "https://www.parseword.com/"))
 
 pattern = re.compile(
     r"Parseword\s+#(?P<id>\d+).*?"

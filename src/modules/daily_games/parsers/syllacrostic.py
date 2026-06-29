@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 SYLLACROSTIC_ORIGIN_DATE = datetime.date(day=28, month=3, year=2023)
@@ -25,6 +25,11 @@ pattern = re.compile(
     r"(?:(?P<title>[A-Z ]+)\s+)?#(?P<game_number>\d+)[\r\n]+[-\s]+[\r\n]+⏱️:\s*(?P<time>\d{2}:\d{2})(?:[\r\n]+[-\s]+)?(?:[\r\n]+(?P<date>\d{4}-\d{2}-\d{2}))?",
     re.MULTILINE,
 )
+
+register_link_association_for_automatic_link_posting(
+        "syllacrostic.com",
+        ("https://syllacrostic.com/", "https://www.syllacrostic.com/"),
+    )
 
 
 @register_parser(game_name, r"https://syllacrostic.com/")

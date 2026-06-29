@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 WORDLE_ORIGIN_DATE = datetime.date(day=19, month=6, year=2021)
@@ -20,6 +20,7 @@ game_info = utils.GameInfo(
 
 add_game_info(game_name, game_info)
 
+register_link_association_for_automatic_link_posting("Wordle ", ("https://www.nytimes.com/games/wordle", "https://nytimes.com/games/wordle"))
 
 pattern = re.compile(
     r"^Wordle\s+(?P<number>[\d,]+)\s+(?P<guesses>[\dX]+)(?:/\d+|/∞)?", re.MULTILINE

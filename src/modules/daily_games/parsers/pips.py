@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 import yaml
 import pathlib
@@ -33,6 +33,7 @@ pattern = re.compile(
     re.MULTILINE,
 )
 
+register_link_association_for_automatic_link_posting("Pips #", ("https://www.nytimes.com/games/pips", "https://nytimes.com/games/pips"))
 
 @register_parser(hard_game_name, r"^Pips\s+#\d+\s+Hard")
 @register_parser(medium_game_name, r"^Pips\s+#\d+\s+Medium")

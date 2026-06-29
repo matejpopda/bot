@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 REUNION_ORIGIN_DATE = datetime.date(day=8, month=10, year=2025)
@@ -26,6 +26,7 @@ pattern = re.compile(
     re.DOTALL,
 )
 
+register_link_association_for_automatic_link_posting("REUNION ", ("https://www.merriam-webster.com/games/reunion", "https://merriam-webster.com/games/reunion"))
 
 @register_parser(game_name, r"REUNION ")
 def reunion_parser(message: discord.Message):

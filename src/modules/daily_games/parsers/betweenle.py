@@ -3,6 +3,7 @@ import discord
 import re
 from .. import utils
 from ..daily_games import register_parser
+from ..daily_games import register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 BETWEENLE_FIRST_GAME_DATE = datetime.date(year=2023, month=3, day=16)
@@ -24,6 +25,9 @@ pattern = re.compile(
     r"Betweenle\s+(?P<game_number>\d+)\s*-\s*(?P<score>\d+)",
     re.IGNORECASE
 )
+
+
+register_link_association_for_automatic_link_posting("Betweenle", ("https://betweenle.com/", "https://www.betweenle.com/"))
 
 @register_parser(game_name, r"^Betweenle")
 def betweenle_parser(message: discord.Message) -> tuple[int, datetime.date, int] | None:

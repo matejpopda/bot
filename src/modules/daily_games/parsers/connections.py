@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 import string
@@ -31,6 +31,8 @@ game_info = utils.GameInfo(
 
 add_game_info(game_name, game_info)
 
+register_link_association_for_automatic_link_posting("Connections\nPuzzle #", ("https://www.nytimes.com/games/connections", "https://nytimes.com/games/connections"))
+    
 
 pattern = re.compile(
     r"^(?P<game>Connections)\s*\nPuzzle\s*#(?P<number>\d+)", re.MULTILINE

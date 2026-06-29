@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 
@@ -28,6 +28,9 @@ pattern = re.compile(
     re.DOTALL,
 )
 
+
+
+register_link_association_for_automatic_link_posting("VideoPuzzle.org", ("https://videopuzzle.org/", "https://www.videopuzzle.org/"))
 
 @register_parser(game_name, r"VideoPuzzle.org")
 def videopuzzle_parser(message: discord.Message):

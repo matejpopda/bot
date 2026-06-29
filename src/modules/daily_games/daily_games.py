@@ -1,7 +1,7 @@
 import discord
 import datetime
 import re
-from typing import Callable
+from typing import Callable, Iterable
 import discord
 import datetime
 import logging
@@ -37,6 +37,14 @@ def register_parser(game_name: str, pattern: str):
     if all([game.name != game_name for game in available_games]):
         available_games.append(discord.OptionChoice(game_name))
     return decorator
+
+
+link_association = []
+
+def register_link_association_for_automatic_link_posting(broken_link: str, possible_fixed_links: Iterable[str]):
+    link_tuple = (broken_link, (possible_fixed_links))
+    link_association.append(link_tuple)
+
 
 
 async def ingest_message(message: discord.Message):
@@ -229,28 +237,6 @@ async def send_score_to_database(
     
 
 
-link_association = [
-    ("Betweenle", ("https://betweenle.com/", "https://www.betweenle.com/")),
-    (
-        "REVEALED",
-        (
-            "https://www.britannica.com/games/revealed",
-            "https://britannica.com/games/revealed",
-        ),
-    ),
-    ("VideoPuzzle.org", ("https://videopuzzle.org/", "https://www.videopuzzle.org/")),
-    ("catfishing.net", ("https://catfishing.net/", "https://www.catfishing.net/")),
-    (
-        "syllacrostic.com",
-        ("https://syllacrostic.com/", "https://www.syllacrostic.com/"),
-    ),
-    ("Pips #", ("https://www.nytimes.com/games/pips", "https://nytimes.com/games/pips")),
-    ("Connections\nPuzzle #", ("https://www.nytimes.com/games/connections", "https://nytimes.com/games/connections")),
-    ("REUNION ", ("https://www.merriam-webster.com/games/reunion", "https://merriam-webster.com/games/reunion")),
-    ("Wordle ", ("https://www.nytimes.com/games/wordle", "https://nytimes.com/games/wordle")),
-    ("Parseword #", ("https://www.parseword.com/daily", "https://www.parseword.com/")),
-    ("4x3.fun", ("https://www.hankgreen.com/fourbythree")),
-]
 
 
 async def get_a_fixed_link(message: discord.Message) -> str | None:

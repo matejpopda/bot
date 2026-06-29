@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 FOUR_BY_THREE_ORIGIN_DATE = datetime.date(day=24, month=6, year=2026)
@@ -20,6 +20,7 @@ game_info = utils.GameInfo(
 
 add_game_info(game_name, game_info)
 
+register_link_association_for_automatic_link_posting("4x3.fun", ("https://www.hankgreen.com/fourbythree",))
 
 pattern = re.compile(
     r"(?P<date>\d{1,2}\s+[A-Za-z]+\s+\d{4})\s+(?P<score>\d+)\s+points"

@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 REVEALED_ORIGIN_DATE = datetime.date(day=6, month=10, year=2025)
@@ -27,6 +27,9 @@ pattern = re.compile(
     r"I couldn’t solve it.*?)",
     re.DOTALL,
 )
+
+register_link_association_for_automatic_link_posting("REVEALED", ("https://www.britannica.com/games/revealed",
+                                                                  "https://britannica.com/games/revealed",))
 
 
 @register_parser(game_name, r"REVEALED: ")

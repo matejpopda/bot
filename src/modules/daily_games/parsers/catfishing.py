@@ -2,7 +2,7 @@ import datetime
 import discord
 import re
 from .. import utils
-from ..daily_games import register_parser
+from ..daily_games import register_parser, register_link_association_for_automatic_link_posting
 from ..daily_games import add_game_info
 
 CATFISHING_ORIGIN_DATE = datetime.date(day=23, month=6, year=2024)
@@ -26,6 +26,7 @@ pattern = re.compile(
     re.MULTILINE,
 )
 
+register_link_association_for_automatic_link_posting("catfishing.net", ("https://catfishing.net/", "https://www.catfishing.net/"))
 
 @register_parser(game_name, r"catfishing.net")
 def catfishing_parser(message: discord.Message):
