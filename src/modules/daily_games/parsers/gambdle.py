@@ -5,7 +5,7 @@ from .. import utils
 from ..daily_games import register_parser
 from ..daily_games import add_game_info
 
-GAMBDLE_ORIGIN_DATE = datetime.date(day=5, month=5, year=2026)
+GAMBDLE_ORIGIN_DATE = datetime.date(day=4, month=5, year=2026)
 game_name = "Gambdle"
 
 
