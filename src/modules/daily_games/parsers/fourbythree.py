@@ -20,7 +20,7 @@ game_info = utils.GameInfo(
 
 add_game_info(game_name, game_info)
 
-register_link_association_for_automatic_link_posting("4x3.fun", ("https://www.hankgreen.com/fourbythree", "https://4x3.fun/"))
+# register_link_association_for_automatic_link_posting("4x3.fun", ("https://www.hankgreen.com/fourbythree", "https://4x3.fun/"))
 
 pattern = re.compile(
     r"(?P<date>\d{1,2}\s+[A-Za-z]+\s+\d{4})\s+((?P<score>\d+)\s+points|Out of guesses)"
