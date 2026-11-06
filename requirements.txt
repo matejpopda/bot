@@ -18,6 +18,7 @@ alembic==1.17.1
 # Dice rolling library for TTRPG
 dyce==0.6.2
 d20==1.1.2
+lark # D20s dependency on python 1.15
 
 # Plotting library for statistics
 seaborn==0.13.2
@@ -50,3 +51,4 @@ torchaudio
 torchcodec
 torchvision
 transformers
+librosa # anytoanypipeline in transformers requires

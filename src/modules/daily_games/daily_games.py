@@ -19,6 +19,7 @@ import re
 from .models import RegisteredChannels, Scores
 from . import utils
 
+from .parsers import wordle_bot_parser
 
 logger = logging.getLogger("dailies")
 
@@ -77,6 +78,9 @@ async def ingest_message(message: discord.Message):
         )
 
 
+    await wordle_bot_handling(message=message)
+
+
 async def ingest_games_in_channel_from_context(ctx: discord.ApplicationContext, limit=None):
     channel = ctx.channel
     await ingest_games_in_channel(channel, limit)
@@ -86,8 +90,8 @@ async def ingest_games_in_channel(channel, limit):
     assert isinstance(channel, loggable_channel_types)
     logger.info(f"Ingesting messages in {channel.id} - name: {channel_name(channel)}.")
     async for msg in channel.history(limit=limit):
-        if msg.author.bot == True:
-            continue
+        # if msg.author.bot == True:
+        #     continue
         try:
             await ingest_message(msg)
         except sqlalchemy.exc.IntegrityError:
@@ -247,3 +251,35 @@ async def get_a_fixed_link(message: discord.Message) -> str | None:
                     if fixed in msg.content:
                         return
             return fixed_messages[0]
+
+
+# This is a special case for when players use the discord app instead of just posting a score. 
+# The magic numbers such as the wordle game start are all external invariants
+async def wordle_bot_handling(message:discord.Message) -> None: 
+    if not message.author.id == 1211781489931452447: ## Wordle bot id
+        return
+    if not message.content.startswith("**Your"):
+        return
+
+    all_scores = wordle_bot_parser.parse_scores(message=message.content)
+
+    async with database.AsyncSessionLocal.begin() as session:
+            for user_score in all_scores:
+                score = Scores(
+                    channel_id=message.channel.id,
+                    game="Wordle",
+                    message_id=message.id,
+                    user_id=user_score["id"],
+                    timestamp=message.created_at,
+                    guild_id=message.guild.id if message.guild is not None else None,
+                    score=user_score["score"],
+                    date_of_game=message.created_at.date(),
+                    game_number=utils.how_many_days_since_date(datetime.date(day=19, month=6, year=2021), message.created_at.date()),
+                )
+                session.add(score)
+    logger.info(f"Sent wordle bot scores to database. Message {message.id}, user: {message.author.name} - {message.author.id}, scores: {all_scores}")
+                    
+
+
+
+        

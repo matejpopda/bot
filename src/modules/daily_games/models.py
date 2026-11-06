@@ -21,7 +21,7 @@ class Scores(database.Base):
     __tablename__ = "scores"
     message_id: Mapped[int] = mapped_column(primary_key=True)
     score: Mapped[float]
-    user_id: Mapped[int]
+    user_id: Mapped[int] = mapped_column(primary_key=True)
     channel_id: Mapped[int]
     guild_id: Mapped[int | None]
     game: Mapped[str] = mapped_column(primary_key=True)
