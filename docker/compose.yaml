@@ -1,5 +1,6 @@
 services:
   discord-bot:
+    image: matejpopda/my-discord-bot:latest
     build:
       context: ..
       dockerfile: docker/Dockerfile

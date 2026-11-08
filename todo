@@ -11,6 +11,10 @@ Tarot card drawing and reading.
 
 Inference message parser should be made to be able to ingest gifs and embeds.  
 
+Configure which Gemma model to use
+
+Enable disable cogs + Disable cogs which dont have valid token for example
+
 
 Catch errors that can be emitted by the external APIs 
 Implement a command to use https://soruly.github.io/trace.moe-api/#/
