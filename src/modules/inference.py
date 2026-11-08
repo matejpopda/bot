@@ -7,6 +7,8 @@ import asyncio
 import time
 import dataclasses
 import logging
+log = logging.getLogger("inference")
+
 import enum
 import aiohttp
 import discord
@@ -159,6 +161,8 @@ async def single_question(input_str: str, mood:Moods):
 
 
     output = await model(messages)  # type: ignore
+    log.debug(output)
+
     return output[0]["generated_text"][-1]["content"]
 
 
@@ -170,6 +174,7 @@ async def describe_media(input_msg: discord.Message):
         ]
 
         output = await model(messages)  # type: ignore
+        log.debug(output)
         return output[0]["generated_text"][-1]["content"]
 
 
@@ -185,6 +190,8 @@ async def add_to_chat(input_messages: list[discord.Message], mood: Moods, bots_u
 
         messages.append({"role": "user", "content": [{"type": "text", "text":f"Continue."}]})
         output = await model(messages)  # type: ignore
+        log.debug(output)
+
     return output[0]["generated_text"][-1]["content"]
 
 
@@ -281,6 +288,8 @@ async def transcribe_audio(input_bytes: bytes):
 
 
         output = await model(messages)  # type: ignore
+        log.debug(output)
+
     return output[0]["generated_text"][-1]["content"]
 
 async def transcribe_video(input: bytes):

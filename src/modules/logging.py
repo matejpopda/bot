@@ -50,7 +50,20 @@ def setup_discord_logging():
 
     handler = get_rotating_file_handler(logfilepath)
     logger.addHandler(handler)
-    
+
+def setup_inference_logging():
+    logfilepath = Path('logs/inference.log')
+
+    logfilepath.parent.mkdir(exist_ok=True)
+
+    logger = logging.getLogger('inference')
+    logger.propagate = False
+    logger.setLevel(logging.INFO)
+
+    handler = get_rotating_file_handler(logfilepath)
+    logger.addHandler(handler)
+
+
 def setup_root_logging():
     logfilepath = Path('logs/root.log')
 
@@ -100,6 +113,7 @@ def setup_ignoring_of_loggers():
 def setup_all_logging():
     setup_database_logging()
     setup_discord_logging()
+    setup_inference_logging()
     setup_root_logging()
     setup_announcer_logging()
     
