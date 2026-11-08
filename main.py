@@ -3,6 +3,10 @@ import logging
 import src.modules.logging
 src.modules.logging.setup_all_logging()
 
+import src.modules.config_validation
+src.modules.config_validation.validate()
+
+
 import asyncio
 
 import discord
