@@ -41,14 +41,9 @@ lyricsgenius==3.7.5
 
 
 # Audio Work
-audiofile
-yt_dlp
+audiofile==1.6.1
+yt-dlp==2026.10.26
 
 # LLms and other machine learning stuff
-torch
-bitsandbytes>=0.46.1
-torchaudio
-torchcodec
-torchvision
-transformers
-librosa # anytoanypipeline in transformers requires
+-r requirements-ml.txt # In a different file for faster docker image build 
+

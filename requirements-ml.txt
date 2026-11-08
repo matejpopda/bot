@@ -1,0 +1,10 @@
+--extra-index-url https://download.pytorch.org/whl/cu130 # CUDA capability
+
+
+torch==2.15.0
+bitsandbytes==0.50.2
+torchaudio==2.11.1
+torchcodec==0.17.0
+torchvision==0.29.2
+transformers==5.22.1
+librosa==1.0.0 # anytoanypipeline in transformers requires
