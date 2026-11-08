@@ -1,0 +1,68 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Discord Bot",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                "docker/compose.yaml",
+                "build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Start Discord Bot",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                "docker/compose.yaml",
+                "up",
+                "-d"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Stop Discord Bot",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                "docker/compose.yaml",
+                "down"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "View Bot Logs",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                "docker/compose.yaml",
+                "logs",
+                "-f"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

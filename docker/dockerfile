@@ -1,0 +1,30 @@
+FROM python:3.15-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    mediainfo \
+    sox \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements-ml.txt .
+RUN pip install --no-cache-dir -r requirements-ml.txt
+
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+COPY . .
+
+
+RUN cp -rn config_files_examples config_files
+
+# Start the bot
+CMD ["sh", "-c", "cp -rn /app/config_files_examples/. /app/config_files/ && exec python main.py"]

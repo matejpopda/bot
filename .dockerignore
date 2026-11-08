@@ -1,0 +1,24 @@
+.env
+.git
+.gitignore
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+.cache/
+config_files/
+data/
+logs/
+todo
+README.md
+.vscode/
+.dockerignore
+
+
+
+
+# Config example files
+!config_files/.env.example
+!config_files/www.youtube.com_cookies.txt.example
+!config_files/dailies/pips_users_with_wrong_date.yaml-example

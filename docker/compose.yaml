@@ -1,0 +1,22 @@
+services:
+  discord-bot:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: discord-bot
+    restart: unless-stopped
+
+    volumes:
+      - ../config_files:/app/config_files
+      - ../data:/app/data
+      - ../logs:/app/logs
+      - ../.cache:/root/.cache/huggingface
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
