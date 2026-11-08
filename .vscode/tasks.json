@@ -18,6 +18,27 @@
             "problemMatcher": []
         },
         {
+            "label": "Build and Run Discord Bot",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                "docker/compose.yaml",
+                "up",
+                "-d",
+                "--build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "Start Discord Bot",
             "type": "shell",
             "command": "docker",

@@ -21,6 +21,10 @@ transformers.utils.logging.set_verbosity_error()
 huggingface_hub.logging.set_verbosity_error()
 
 
+model_config = transformers.GenerationConfig.from_pretrained("google/gemma-4-e2b-it")
+model_config.max_new_tokens = 256
+model_gen_kwargs = dict(generation_config=model_config)
+
 class LazyGemma4E4BIT:
     def __init__(
         self,
@@ -41,10 +45,10 @@ class LazyGemma4E4BIT:
 
             self._pipe = await loop.run_in_executor(
                 None,
-                lambda: transformers.pipeline("any-to-any", model="google/gemma-4-e2b-it", device=0 if torch.cuda.is_available() else -1, max_new_tokens=512, model_kwargs={
-                    # "quantization_config": transformers.BitsAndBytesConfig(load_in_8bit=True), # breaks transcription of audio
-                },
-                load_audio_from_video=True),
+                lambda: transformers.pipeline("any-to-any", 
+                                              model="google/gemma-4-e2b-it", 
+                                              device=0 if torch.cuda.is_available() else -1
+                ),
             )
 
         await self.start_cleanup_loop()
@@ -54,6 +58,8 @@ class LazyGemma4E4BIT:
             await self._load()
             self._last_used = time.time()
             pipe = self._pipe
+
+        kwargs.update(model_gen_kwargs)
 
         loop = asyncio.get_running_loop()
         assert pipe is not None
@@ -98,9 +104,6 @@ class LazyGemma4E4BIT:
                 await self.unload()
 
 model = LazyGemma4E4BIT()
-
-
-
 
 
 @dataclasses.dataclass
